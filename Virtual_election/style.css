@@ -94,7 +94,7 @@ i:hover
 {
     height: 600px;
     width: 100%;
-    background-color: #ace8fe;
+    background-color: #c3d4ee;
     padding-top: 50px;
 }
 .vep
@@ -152,6 +152,12 @@ i:hover
     border: 2px solid #2da4f0;
     border-radius: 5px;
 }
+
+.digilocker{
+    margin-top: 4px;
+    width:max-content ;
+}
+
 button
 {
     background-color: #2d30f0;
