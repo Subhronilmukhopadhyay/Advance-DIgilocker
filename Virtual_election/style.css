@@ -146,28 +146,28 @@ i:hover
 } */
 .inbox
 {
-    height: 20px;
-    width: 220px;
+    height: 30px;
+    width: 290px;
     margin: 10px;
     border: 2px solid #2da4f0;
     border-radius: 5px;
 }
 button
 {
-    background-color: #2da4f0;
+    background-color: #2d30f0;
     text-align: center;
     height: 40px;
     width: 120px;
     padding: 5px 10px;
     margin: 10px;
     border-radius: 15px;
-    color: white;
+    color: rgb(255, 255, 255);
     font-size: 15px;
 }
 button:hover
 {
     transform: scale(1.1);
-    background-color: #004274;
+    background-color: rgb(183, 19, 183);
 }
 
 
