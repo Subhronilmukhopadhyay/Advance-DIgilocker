@@ -1,20 +1,30 @@
 function showForm(formId) {
-    // Hide all forms
     document.getElementById('mobile').style.display = 'none';
     document.getElementById('username').style.display = 'none';
     document.getElementById('aadhaar').style.display = 'none';
 
-    // Remove active class from all tabs
     document.getElementById('tab-mobile').classList.remove('active');
     document.getElementById('tab-username').classList.remove('active');
     document.getElementById('tab-aadhaar').classList.remove('active');
 
-    // Show the selected form
     document.getElementById(formId).style.display = 'block';
 
-    // Add active class to the selected tab
     document.getElementById('tab-' + formId).classList.add('active');
 }
 
-// Initially show the mobile form
 document.getElementById('mobile').style.display = 'block';
+
+document.addEventListener("DOMContentLoaded", function() {
+    var mobileInput = document.getElementById("signin-form").querySelector("input[type='text']");
+
+    mobileInput.addEventListener("input", function() {
+        var mobileNumber = this.value.trim();
+        mobileNumber = mobileNumber.replace(/\D/g, "");
+
+        if (/^\d{10}$/.test(mobileNumber)) {
+            this.setCustomValidity("");
+        } else {
+            this.setCustomValidity("Mobile number must be 10 digits long");
+        }
+    });
+});
