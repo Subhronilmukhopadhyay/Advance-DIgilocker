@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DigiLocker Signup</title>
+    <title>Advanced Search</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
     <!-- login page -->
@@ -19,7 +18,7 @@
         </div>
         <div class="links">
             <div class="home">  
-                <a href="../../HomePage.html"><i class="fa-solid fa-house" style="color: #ffffff;"></i></a>
+                <a href="../HomePage.html"><i class="fa-solid fa-house" style="color: #ffffff;"></i></a>
             </div>
             <div class="line"></div>
             <div class="tollfree">
@@ -53,7 +52,7 @@
     </div>
     <div class="navbar2">
         <div class="eci">
-            <img src="images/eci.jpg" height="55px" >
+            <img src="../images/eci.jpg" height="55px" >
 
         </div>
         <div class="search">
@@ -64,76 +63,61 @@
     <!-- page1 -->
     <div class="page1">
         <div class="container">
-            <header>
-                <img src="../images/embler.png" alt="Emblem" class="emblem">
-                <div class="title">
-                    <h1 style="color: blue;">DigiLocker</h1>
-                    <p>Document Wallet to Empower Citizens</p>
+            <h1>ADVANCE SEARCH</h1>
+            <p>Refine your search...</p>
+            <form id="search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <select id="category" name="category">
+                            <option value="">Select Category</option>
+                            <!-- Add options as needed -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="subcategory" name="subcategory">
+                            <option value="">Select Sub Category</option>
+                            <!-- Add options as needed -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="keyword" name="keyword" placeholder="Search keyword">
+                    </div>
                 </div>
-            </header>
-            <main>
-                <form id="signup-form">
-                    <h2>Creating account is fast and easy!</h2>
-                    <input type="text" id="fullName" name="fullName" required placeholder="Full Name*">
-
-                    <label for="dob" style="font-size: small;">Date of Birth*</label>
-                    <div class="dob">
-                        <select id="dob-day" name="dob-day" required style="font-weight: lighter; font-size: small;">
-                            <option value="">Day</option>
-                        </select>
-                        <select id="dob-month" name="dob-month" required style="font-weight: lighter; font-size: small;">
-                            <option value="">Month</option>
-                        </select>
-                        <select id="dob-year" name="dob-year" required style="font-weight: lighter; font-size: small;">
-                            <option value="">Year</option>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="startdate" name="startdate" placeholder="start date" onfocus="(this.type='date')" onblur="(this.type='text')" pattern="\d{2}-\d{2}-\d{4}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="todate" name="todate" placeholder="to date" onfocus="(this.type='date')" onblur="(this.type='text')" pattern="\d{2}-\d{2}-\d{4}">
+                    </div>
+                    <div class="form-group">
+                        <select id="division" name="division">
+                            <option value="">Select Division</option>
+                            <!-- Add options as needed -->
                         </select>
                     </div>
-
-                    <div class="gender">
-                        <div class="radio-option">
-                            <input type="radio" id="male" name="gender" value="male" required>
-                            <label for="male" style="margin-top: 7px;">Male</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="female" name="gender" value="female">
-                            <label for="female" style="margin-top: 7px;">Female</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="other" name="gender" value="other">
-                            <label for="other" style="margin-top: 7px;">Other</label>
-                        </div>
-                    </div>
-
-                    <input type="text" id="mobile" name="mobile" required placeholder="Mobile Number*">
-
-                    <input type="email" id="email" name="email" placeholder="Email ID*">
-
-                    <input type="password" id="pin" name="pin" maxlength="6" required placeholder="Set 6 digit security PIN*">
-
-                    <button type="submit">Submit</button>
-                    <div class="terms">
-                        <label for="terms">I agree to the DigiLocker <a href="#" style="color: rgb(22, 161, 221);">Terms of Service</a>.</label>
-                    </div>
-                </form>
-                <p>Already have an account? <a href="../digilogin.html">Sign In</a></p>
-            </main>
+                </div>
+                <div class="form-row buttons">
+                    <button type="button" onclick="search()">Search</button>
+                    <button type="button" onclick="resetForm()">Reset</button>
+                </div>
+            </form>
         </div>
     </div>
-
-    <!-- footer -->
-    <footer class="footer">
-        <div class="container">
+     <!-- footer -->
+     <footer class="footer">
+        <div class="container2">
             <div class="footer-section1 footer-section">
                 <h3>Election Commission of India</h3>
                 <div class="eci-txt">
-                    <p><img src="images/eci-logo-white.svg" alt="Election Commission of India Logo" class="footer-logo" height="80px" width="80px"></p>
+                    <p><img src="../images/eci-logo-white.svg" alt="Election Commission of India Logo" class="footer-logo" height="80px" width="80px"></p>
                     <p>The Election Commission of India is an autonomous constitutional authority responsible for administering election processes in India. The body administers elections to the Lok Sabha, Rajya Sabha, State Legislative Assemblies in India, and the offices of the President and Vice President in the country.</p>
                 </div>
                 
                 <p>📍 Nirvachan Sadan, Ashoka Road, New Delhi 110001</p>
             </div>
             <div class="footer-section">
-                <img src="images/ge24.png" alt="General Election 2024" class="election-image">
+                <img src="../images/ge24.png" alt="General Election 2024" class="election-image">
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
@@ -176,7 +160,6 @@
             <p>© Copyright Election Commission of India 2024</p>
         </div>
     </footer>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="scripts.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
