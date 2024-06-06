@@ -78,21 +78,22 @@
                         <button class="tab" id="tab-username" onclick="showForm('username')">Username</button>
                         <button class="tab" id="tab-aadhaar" onclick="showForm('aadhaar')">Aadhaar</button>
                     </div>
-                    <div id="mobile" class="signin-form">
-                        <input type="text" placeholder="Mobile Number*" >
-                        <p class="register">Enter your registered Mobile number</p>
-                        <input type="password" placeholder="6 digit security PIN*">
-                    </div>
-                    <div id="username" class="signin-form" style="display: none;">
-                        <input type="text" placeholder="Username*">
-                        <input type="password" placeholder="6 digit security PIN*">
-                    </div>
-                    <div id="aadhaar" class="signin-form" style="display: none;">
-                        <input type="text" placeholder="Aadhaar Number*">
-                        <input type="password" placeholder="6 digit security PIN*">
-                    </div>
-                    <a href="#" class="forgot-pin">Forgot security PIN?</a>
-                    <a><button class="signin-button">Sign In</button></a>
+                    <form id="signin-form" onsubmit="handleSubmit(event)">
+                        <div id="mobile" class="signin-form">
+                            <input type="text" name="mobile" placeholder="Mobile">
+                            <input type="password" name="mobile-pin" placeholder="6 digit security PIN*">
+                        </div>
+                        <div id="username" class="signin-form" style="display: none;">
+                            <input type="text" name="username" placeholder="Username">
+                            <input type="password" name="username-password" placeholder="6 digit security PIN*">
+                        </div>
+                        <div id="aadhaar" class="signin-form" style="display: none;">
+                            <input type="text" name="aadhaar" placeholder="Aadhaar Number">
+                            <input type="password" name="aadhaar-pin" placeholder="6 digit security PIN*">
+                        </div>
+                        <a href="#" class="forgot-pin">Forgot security PIN?</a>
+                        <button type="submit" class="signin-button">Sign In</button>
+                    </form>
                     <p class="signup">Do not have an account? <a href="./Sign_up/index.html">Sign Up</a></p>
                 </div>
             </main>
