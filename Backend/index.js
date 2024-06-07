@@ -38,7 +38,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         if(req.body.type === "Mobile"){
             const mobile = req.body.mobile;
             const pin = req.body.pin;
-            const result = await await db.query("SELECT * FROM voters WHERE mobile = $1", [mobile]);
+            const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [mobile]);
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
@@ -63,7 +63,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         else if(req.body.type === "Username"){
             const username = req.body.username;
             const pin = req.body.pin;
-            const result = await await db.query("SELECT * FROM voters WHERE username = $1", [username]);
+            const result = await db.query("SELECT * FROM voters WHERE username = $1", [username]);
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
@@ -88,7 +88,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         else if(req.body.type === "Aadhaar"){
             const aadhaar = req.body.aadhaar;
             const pin = req.body.pin;
-            const result = await await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
+            const result = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
