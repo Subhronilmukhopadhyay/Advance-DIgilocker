@@ -78,7 +78,22 @@ function handleSubmit(event) {
 
     if (isValid) {
         console.log('Form Data:', formData);
-        alert(`Form for ${formData.type} has been submitted!`);
+        fetch('/Digilocker_login/digilogin.html', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+        
     }
 }
 
