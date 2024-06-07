@@ -89,6 +89,7 @@ function handleSubmit(event) {
         .then(data => {
             alert(data.message);
             window.location.reload();
+            
         })
         .catch(error => {
             console.error('Error:', error);

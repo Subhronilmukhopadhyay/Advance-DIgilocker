@@ -38,7 +38,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         if(req.body.type === "Mobile"){
             const mobile = req.body.mobile;
             const pin = req.body.pin;
-            const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [mobile]);
+            const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [parseInt(mobile)]);
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
@@ -48,7 +48,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                     } else {
                       if (result) {
                         app.get("/", (req, res) => {
-                            res.sendFile(path.join(frontendPath, 'Virtual_election\VoterLogin.html'));
+                            res.sendFile(path.join(frontendPath, 'Virtual_election/VoterLogin.html'));
                         });
                       } else {
                         res.send({message: "Incorrect Password"});
