@@ -52,15 +52,15 @@ function handleSubmit(event) {
         }
     } else if (activeTab.id === 'tab-username') {
         const username = document.querySelector('input[name="username"]').value;
-        const password = document.querySelector('input[name="username-password"]').value;
+        const pin = document.querySelector('input[name="username-pin"]').value;
         if (!validateUsername(username)) {
             alert('Invalid username format. It should be alphanumeric.');
             isValid = false;
-        } else if (!validatePin(password)) {
+        } else if (!validatePin(pin)) {
             alert('Invalid PIN format. It should be a 6 digit number.');
             isValid = false;
         } else {
-            formData = { type: 'Username', username, password };
+            formData = { type: 'Username', username, pin };
         }
     } else if (activeTab.id === 'tab-aadhaar') {
         const aadhaar = document.querySelector('input[name="aadhaar"]').value;
