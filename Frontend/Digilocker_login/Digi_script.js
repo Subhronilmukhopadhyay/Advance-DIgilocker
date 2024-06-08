@@ -18,7 +18,7 @@ function validateMobile(mobile) {
 }
 
 function validateUsername(username) {
-    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    const usernameRegex = /^[A-Za-z\s]+$/;
     return usernameRegex.test(username);
 }
 
@@ -89,7 +89,9 @@ function handleSubmit(event) {
         .then(data => {
             alert(data.message);
             window.location.reload();
-            
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+            }
         })
         .catch(error => {
             console.error('Error:', error);

@@ -32,6 +32,49 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, 'HomePage.html'));
 });
 
+app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
+  const fullName = req.body.fullName;
+  const gender = req.body.gender;
+  const mobile = req.body.mobile;
+  const aadhaar = req.body.Aadhaar;
+  const pin = req.body.pin;
+  const year = parseInt(req.body['dob-year'], 10); 
+  const month = parseInt(req.body['dob-month'], 10) - 1; 
+  const day = parseInt(req.body['dob-day'], 10);
+
+  const DOB = new Date(year, month, day);
+  const newDOB = DOB.toISOString().slice(0, 10);
+  
+  try {
+      console.log('Received form data:', req.body);
+      // res.json({ message: 'Form has been submitted!' });
+
+      const checkResult = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
+      if (checkResult.rows.length > 0) {
+        return res.status(500).json({ message: `Account Already exist for ${fullName}` });
+      } else {
+        bcrypt.hash(pin, saltRounds, async (err, hash) => {
+          if (err) {
+            return res.send({message: `Error hashing password: ${err}`});
+          } else {
+            console.log("Hashed Password:", hash);
+            await db.query(
+              "INSERT INTO voters (Full_name, DOB, Gender, mobile, aadhaar, pin) VALUES ($1, $2, $3, $4, $5, $6)",
+              [fullName, newDOB, gender, mobile, aadhaar, hash]
+            );
+            res.json({ 
+              message: 'Form has been submitted!',
+              redirectUrl: '/Vote/vote.html',
+            });
+          }
+        });
+      }
+  } catch (err) {
+      console.log(err.message);
+      res.status(500).json({ error: 'An error occurred while processing the form' });
+  }
+});
+
 app.post("/Digilocker_login/digilogin.html", async (req, res) => {
     try{
         console.log('Received form data:', req.body);
@@ -42,16 +85,17 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
-                bcrypt.compare(loginPassword, storedHashedPassword, (err, result) => {
+                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
                     if (err) {
                       console.error("Error comparing passwords:", err);
                     } else {
                       if (result) {
-                        app.get("/", (req, res) => {
-                            res.sendFile(path.join(frontendPath, 'Virtual_election/VoterLogin.html'));
+                        res.json({ 
+                          message: "Successfully Logged In",
+                          redirectUrl: '../vote/Vote.html',
                         });
                       } else {
-                        res.send({message: "Incorrect Password"});
+                        res.send({message: "Incorrect Pin"});
                       }
                     }
                 });
@@ -63,17 +107,18 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         else if(req.body.type === "Username"){
             const username = req.body.username;
             const pin = req.body.pin;
-            const result = await db.query("SELECT * FROM voters WHERE username = $1", [username]);
+            const result = await db.query("SELECT * FROM voters WHERE Full_name = $1", [username]);
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
-                bcrypt.compare(loginPassword, storedHashedPassword, (err, result) => {
+                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
                     if (err) {
                       console.error("Error comparing passwords:", err);
                     } else {
                       if (result) {
-                        app.get("/", (req, res) => {
-                            res.sendFile(path.join(frontendPath, 'Virtual_election\VoterLogin.html'));
+                        res.json({ 
+                          message: "Successfully Logged In",
+                          redirectUrl: '../vote/Vote.html',
                         });
                       } else {
                         res.send({message: "Incorrect Password"});
@@ -92,13 +137,14 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
             if(result.rows.length > 0){
                 const user = result.rows[0];
                 const storedHashedPassword = user.pin;
-                bcrypt.compare(loginPassword, storedHashedPassword, (err, result) => {
+                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
                     if (err) {
                       console.error("Error comparing passwords:", err);
                     } else {
                       if (result) {
-                        app.get("/", (req, res) => {
-                            res.sendFile(path.join(frontendPath, 'Virtual_election\VoterLogin.html'));
+                        res.json({ 
+                          message: "Successfully Logged In",
+                          redirectUrl: '../vote/Vote.html',
                         });
                       } else {
                         res.send({message: "Incorrect Password"});

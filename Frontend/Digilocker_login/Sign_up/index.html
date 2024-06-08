@@ -72,7 +72,7 @@
                 </div>
             </header>
             <main>
-                <form id="signup-form">
+                <form id="signup-form" onsubmit="handleSubmit(event)">
                     <h2>Creating account is fast and easy!</h2>
                     <input type="text" id="fullName" name="fullName" required placeholder="Full Name*">
 
@@ -106,13 +106,13 @@
 
                     <input type="text" id="mobile" name="mobile" required placeholder="Mobile Number*">
 
-                    <input type="email" id="email" name="email" placeholder="Email ID*">
+                    <input type="text" id="Aadhaar" name="Aadhaar" placeholder="Aadhaar*">
 
-                    <input type="password" id="pin" name="pin" maxlength="6" required placeholder="Set 6 digit security PIN*">
+                    <input type="password" id="pin" name="pin" minlength="6" maxlength="6" required placeholder="Set 6 digit security PIN*">
 
                     <button type="submit">Submit</button>
                     <div class="terms">
-                        <label for="terms">I agree to the DigiLocker <a href="#" style="color: rgb(22, 161, 221);">Terms of Service</a>.</label>
+                        <label for="terms">I agree to the DigiLocker <a href="https://www.digilocker.gov.in/about/tos" style="color: rgb(22, 161, 221);">Terms of Service</a>.</label>
                     </div>
                 </form>
                 <p>Already have an account? <a href="../digilogin.html">Sign In</a></p>
