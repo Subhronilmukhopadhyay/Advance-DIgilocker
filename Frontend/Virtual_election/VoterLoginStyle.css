@@ -94,7 +94,7 @@ i:hover
 {
     height: 600px;
     width: 100%;
-    background-color: #c3d4ee;
+    background-color: #ace8fe;
     padding-top: 50px;
 }
 .vep
@@ -146,34 +146,28 @@ i:hover
 } */
 .inbox
 {
-    height: 30px;
-    width: 290px;
+    height: 20px;
+    width: 220px;
     margin: 10px;
     border: 2px solid #2da4f0;
     border-radius: 5px;
 }
-
-.digilocker{
-    margin-top: 4px;
-    width:max-content ;
-}
-
 button
 {
-    background-color: #2d30f0;
+    background-color: #2da4f0;
     text-align: center;
     height: 40px;
     width: 120px;
     padding: 5px 10px;
     margin: 10px;
     border-radius: 15px;
-    color: rgb(255, 255, 255);
+    color: white;
     font-size: 15px;
 }
 button:hover
 {
     transform: scale(1.1);
-    background-color: rgb(183, 19, 183);
+    background-color: #004274;
 }
 
 
