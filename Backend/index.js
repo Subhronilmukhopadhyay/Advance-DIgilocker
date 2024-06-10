@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import path from "path";
 import pg from "pg";
 import bcrypt from "bcrypt";
+import cors from"cors";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -20,10 +21,14 @@ const db = new pg.Client({
     password: "Subhronil@1234",
     port: 5432,
   });
-  db.connect();
+db.connect();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.use(express.static("public"));
+
+app.use(cors());
 
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 app.use(express.static(frontendPath));
@@ -64,7 +69,7 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
             );
             res.json({ 
               message: 'Form has been submitted!',
-              redirectUrl: '/Vote/vote.html',
+              redirectUrl: '/Voter_Info/voterinfo.html',
             });
           }
         });
@@ -92,7 +97,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       if (result) {
                         res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '../vote/Vote.html',
+                          redirectUrl: '../Voter_Info/voterinfo.html',
                         });
                       } else {
                         res.send({message: "Incorrect Pin"});
@@ -118,7 +123,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       if (result) {
                         res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '../vote/Vote.html',
+                          redirectUrl: '../Voter_Info/voterinfo.html',
                         });
                       } else {
                         res.send({message: "Incorrect Password"});
@@ -144,7 +149,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       if (result) {
                         res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '../vote/Vote.html',
+                          redirectUrl: '../Voter_Info/voterinfo.html',
                         });
                       } else {
                         res.send({message: "Incorrect Password"});
@@ -161,6 +166,31 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
         console.log(err);
         res.json({ message: `Something went wrong` });
     }
+});
+
+app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
+  try{
+    // console.log('Received form data:', req.body);
+    const params = new URLSearchParams({
+      secret: '6LdUEfUpAAAAAG0Gq3Qza8fYvtUh0IrxzJvHxoxL',
+      response: req.body['g-recaptcha-response'],
+      remoteip: req.ip,
+    });
+    fetch('https://www.google.com/recaptcha/api/siteverify' ,{
+      method: "POST",
+      body: params,
+    })
+    .then(res => res.json())
+    .then(data=>{
+      if(data.success){
+        res.json({captchaSuccess: true});
+      } else{
+        res.json({captchaSuccess: false});
+      }
+    })
+  }catch(err){
+    console.log(err.message);
+  }
 });
 
 app.listen(port, () => {
