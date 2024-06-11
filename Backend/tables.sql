@@ -1,0 +1,9 @@
+CREATE TABLE voters (
+  id SERIAL PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  dob DATE NOT NULL,
+  gender VARCHAR(20) NOT NULL,
+  mobile VARCHAR(20) NOT NULL,
+  aadhaar CHAR(12) UNIQUE NOT NULL, 
+  pin VARCHAR(100) NOT NULL
+);
