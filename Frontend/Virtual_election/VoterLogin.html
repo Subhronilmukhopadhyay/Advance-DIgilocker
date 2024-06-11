@@ -64,7 +64,7 @@
     <div class="page1">
         <div class="vep"> Virtual Election Portal </div>
         <div class="login">
-            <div class="txt" style="color: blue; font-weight: bold;">
+            <div class="txt">
                 Login
             </div>
             <!-- <div class="line1">
@@ -73,10 +73,12 @@
                 <div class="green"></div>
             </div> -->
             <div class="info">
-                <input type="text" placeholder="Enter your Voter ID/Epic Number*" class="inbox"><br>
-                <input type="number" placeholder="Enter your Phone number*" class="inbox"><br>
-                <input type="number" placeholder="Enter 6-digit OTP*" class="inbox"><br>
-                <button>Proceed</button><br>
+                <input type="text" placeholder="Enter your Voter ID/Epic Number" id="epicno"class="inbox"><br>
+                <input type="number" placeholder="Enter your Phone number" id="phone" class="inbox"><br>
+                <button onclick="sendOTP()">Send OTP</button><br>
+                <input type="number" placeholder="Enter 6-digit OTP" id="otp"class="inbox"><br>
+                <button onclick="verifyOTP()">Verify OTP</button>
+                <button onclick="validateForm()">Proceed</button>
 
             </div>
         </div>
@@ -169,5 +171,7 @@
             <p>© Copyright Election Commission of India 2024</p>
         </div>
     </footer>
+    <script src="VoterLogin.js"></script>
+    <script src="2fa/2fa.js"></script>
 </body>
 </html>

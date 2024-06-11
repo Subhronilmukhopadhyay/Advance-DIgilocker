@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form');
+    // Existing functionality to handle CAPTCHA
+    const form = document.querySelector('#captchaForm');
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -34,4 +35,21 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("An error occurred. Please try again.");
         });
     });
+
+    // New functionality to fetch and display user details
+    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
+
+    if (!userDetails) {
+        alert("You are not logged in.");
+        window.location.href = "/";
+    } else {
+        document.getElementById('voter-id').textContent = userDetails.voter_id;
+        document.getElementById('constituency').textContent = userDetails.constituency;
+        document.getElementById('aadhaar').textContent = userDetails.aadhaar;
+        document.getElementById('dob').textContent = userDetails.dob;
+        document.getElementById('full-name').textContent = userDetails.name_of_voter;
+        document.getElementById('father-name').textContent = userDetails.name_of_father_of_voter;
+        document.getElementById('gender').textContent = userDetails.gender;
+        document.getElementById('address').textContent = userDetails.address;
+    }    
 });

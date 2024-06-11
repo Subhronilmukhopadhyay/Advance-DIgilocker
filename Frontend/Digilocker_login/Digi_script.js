@@ -90,6 +90,7 @@ function handleSubmit(event) {
             alert(data.message);
             window.location.reload();
             if (data.redirectUrl) {
+                sessionStorage.setItem('userDetails', JSON.stringify(data.user));
                 window.location.href = data.redirectUrl;
             }
         })
