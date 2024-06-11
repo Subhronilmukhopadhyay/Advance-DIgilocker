@@ -7,21 +7,23 @@ import cors from"cors";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import session from "express-session";
+import env from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+env.config();
 
 const app = express();
 const port = 3000;
 const saltRounds = 10;
 
 const db = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "VotersLocker",
-    password: "@Herondale15",
-    port: 5432,
-  });
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+});
 db.connect();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,7 +41,7 @@ app.get("/", (req, res) => {
 });
 
 app.use(session({
-  secret: 'your-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
 }));
@@ -113,10 +115,8 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                   console.error("Error comparing passwords:", err);
               } else {
                   if (result) {
-                      console.log(user.aadhaar);
                       const result2 = await db.query("SELECT * FROM voters_details WHERE aadhaar = $1", [user.aadhaar]);
-                      console.log(result2);
-                      req.session.user = result2.rows[0];  // Store user details in session
+                      req.session.user = result2.rows[0]; 
                       res.json({ 
                           message: "Successfully Logged In",
                           redirectUrl: '../Voter_Info/voterinfo.html',
