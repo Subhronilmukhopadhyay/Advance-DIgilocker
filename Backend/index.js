@@ -6,21 +6,24 @@ import bcrypt from "bcrypt";
 import cors from"cors";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import session from "express-session";
+import env from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+env.config();
 
 const app = express();
 const port = 3000;
 const saltRounds = 10;
 
 const db = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "VotersLocker",
-    password: "@Herondale15",
-    port: 5432,
-  });
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+});
 db.connect();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -36,6 +39,12 @@ app.use(express.static(frontendPath));
 app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, 'HomePage.html'));
 });
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+}));
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const fullName = req.body.fullName;
@@ -81,91 +90,58 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
 });
 
 app.post("/Digilocker_login/digilogin.html", async (req, res) => {
-    try{
-        console.log('Received form data:', req.body);
-        if(req.body.type === "Mobile"){
-            const mobile = req.body.mobile;
-            const pin = req.body.pin;
-            const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [parseInt(mobile)]);
-            if(result.rows.length > 0){
-                const user = result.rows[0];
-                const storedHashedPassword = user.pin;
-                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
-                    if (err) {
-                      console.error("Error comparing passwords:", err);
-                    } else {
-                      if (result) {
-                        res.json({ 
+  try {
+      console.log('Received form data:', req.body);
+      let user = null;
+
+      if (req.body.type === "Mobile") {
+          const mobile = req.body.mobile;
+          const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [parseInt(mobile)]);
+          user = result.rows[0];
+      } else if (req.body.type === "Username") {
+          const username = req.body.username;
+          const result = await db.query("SELECT * FROM voters WHERE Full_name = $1", [username]);
+          user = result.rows[0];
+      } else if (req.body.type === "Aadhaar") {
+          const aadhaar = req.body.aadhaar;
+          const result = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
+          user = result.rows[0];
+      }
+
+      if (user) {
+          const storedHashedPassword = user.pin;
+          bcrypt.compare(req.body.pin, storedHashedPassword, async (err, result) => {
+              if (err) {
+                  console.error("Error comparing passwords:", err);
+              } else {
+                  if (result) {
+                      const result2 = await db.query("SELECT * FROM voters_details WHERE aadhaar = $1", [user.aadhaar]);
+                      req.session.user = result2.rows[0]; 
+                      res.json({ 
                           message: "Successfully Logged In",
                           redirectUrl: '../Voter_Info/voterinfo.html',
-                        });
-                      } else {
-                        res.send({message: "Incorrect Pin"});
-                      }
-                    }
-                });
-            } else {
-                res.send({message: "User not found"});
-            }
-        }
+                          user: result2.rows[0]
+                      });
+                  } else {
+                      res.send({ message: "Incorrect Pin" });
+                  }
+              }
+          });
+      } else {
+          res.send({ message: "User not found" });
+      }
+  } catch (err) {
+      console.log(err);
+      res.json({ message: `Something went wrong` });
+  }
+});
 
-        else if(req.body.type === "Username"){
-            const username = req.body.username;
-            const pin = req.body.pin;
-            const result = await db.query("SELECT * FROM voters WHERE Full_name = $1", [username]);
-            if(result.rows.length > 0){
-                const user = result.rows[0];
-                const storedHashedPassword = user.pin;
-                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
-                    if (err) {
-                      console.error("Error comparing passwords:", err);
-                    } else {
-                      if (result) {
-                        res.json({ 
-                          message: "Successfully Logged In",
-                          redirectUrl: '../Voter_Info/voterinfo.html',
-                        });
-                      } else {
-                        res.send({message: "Incorrect Password"});
-                      }
-                    }
-                });
-            } else {
-                res.send({message: "User not found"});
-            }
-        }
-
-        else if(req.body.type === "Aadhaar"){
-            const aadhaar = req.body.aadhaar;
-            const pin = req.body.pin;
-            const result = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
-            if(result.rows.length > 0){
-                const user = result.rows[0];
-                const storedHashedPassword = user.pin;
-                bcrypt.compare(pin, storedHashedPassword, (err, result) => {
-                    if (err) {
-                      console.error("Error comparing passwords:", err);
-                    } else {
-                      if (result) {
-                        res.json({ 
-                          message: "Successfully Logged In",
-                          redirectUrl: '../Voter_Info/voterinfo.html',
-                        });
-                      } else {
-                        res.send({message: "Incorrect Password"});
-                      }
-                    }
-                });
-            } else {
-                res.send({message: "User not found"});
-            }
-        }
-
-    }
-    catch(err){
-        console.log(err);
-        res.json({ message: `Something went wrong` });
-    }
+app.get("/voterinfo", (req, res) => {
+  if (req.session.user) {
+      res.json(req.session.user);
+  } else {
+      res.status(401).json({ message: "Unauthorized" });
+  }
 });
 
 app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
