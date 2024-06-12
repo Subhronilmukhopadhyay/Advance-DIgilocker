@@ -187,9 +187,7 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     console.log('Received form data:', req.body);
     const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
-    const result2 = await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
-    console.log(result2.rows[0]);
-    console.log(result.rows[0].count);
+    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[result.rows[0].count]);
   }catch(err){
     console.log(err.message);
   }
