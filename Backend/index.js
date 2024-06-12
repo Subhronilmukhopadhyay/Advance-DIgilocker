@@ -4,6 +4,7 @@ import path from "path";
 import pg from "pg";
 import bcrypt from "bcrypt";
 import cors from"cors";
+import axios from "axios";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import session from "express-session";
@@ -168,48 +169,43 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
 //       res.status(401).json({ message: "Unauthorized" });
 //   }
 // });
-
-app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
-  try{
-    // console.log('Received form data:', req.body);
-    const params = new URLSearchParams({
-      secret: '6LdUEfUpAAAAAG0Gq3Qza8fYvtUh0IrxzJvHxoxL',
-      response: req.body['g-recaptcha-response'],
-      remoteip: req.ip,
-    });
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: "POST",
-      body: params,
-    });
-
-    const data = await response.json();
-    console.log(data);
-    if (!data.success) {
-      return res.json({ captchaSuccess: false });
-    }
-
-    // CAPTCHA is successful, now check if user has voted
+app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
+  try {
     const hasVoted = req.session.user.voted;
     const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
     if (result.rows.length > 0) {
       return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
     }
 
-    req.session.user = req.body.user;
-    res.json({hasVoted: 0, captchaSuccess: true });
+    const recaptchaResponse = req.body["g-recaptcha-response"];
+    if (!recaptchaResponse) {
+      return res.status(400).json({ message: "reCAPTCHA is required" });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
+
+    const response = await axios.post(verificationUrl);
+    if (response.data.success) {
+      // Continue with the rest of your logic
+      console.log(req.session.user);
+      const hasVoted = req.session.user.voted;
+      const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+      console.log(hasVoted);
+      if (result.rows.length > 0) {
+        return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+      }
+      else{
+        return res.send({ message: "Vote now", hasVoted: hasVoted });
+      }
+    } else {
+      return res.status(400).json({ message: "Failed reCAPTCHA verification" });
+    }
+
   } catch (err) {
-    res.json({message: "user's voterID not found or Something went wrong"});
+    return res.json({ message: "user's voterID not found or Something went wrong" });
   }
 });
-
-// app.get("/Digilocker_login/Vote/vote.html", (req, res) => {
-//   if (req.session.user) {
-//       console.log(req.session.user);
-//       res.json(req.session.user);
-//   } else {
-//       res.status(401).json({ message: "Unauthorized" });
-//   }
-// });
 
 app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
   try{
@@ -219,7 +215,11 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     }
     const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
+    const hasVoted = req.session.user.voted;
+    // console.log(hasVoted);
+    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
     await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[result.rows[0].count]);
+
   }catch(err){
     console.log(err.message);
   }
@@ -228,3 +228,57 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+// app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
+//   try{
+//     // console.log('Received form data:', req.body);
+//     const params = new URLSearchParams({
+//       secret: '6LdUEfUpAAAAAG0Gq3Qza8fYvtUh0IrxzJvHxoxL',
+//       response: req.body['g-recaptcha-response'],
+//       remoteip: req.ip,
+//     });
+//     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+//       method: "POST",
+//       body: params,
+//     });
+
+//     const data = await response.json();
+//     console.log(data);
+//     if (!data.success) {
+//       return res.json({ captchaSuccess: false });
+//     }
+
+//     // CAPTCHA is successful, now check if user has voted
+//     const hasVoted = req.session.user.voted;
+//     const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+//     if (result.rows.length > 0) {
+//       return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+//     }
+
+//     req.session.user = req.body.user;
+//     res.json({hasVoted: 0, captchaSuccess: true });
+//   } catch (err) {
+//     res.json({message: "user's voterID not found or Something went wrong"});
+//   }
+// });
+
+// app.get("/Digilocker_login/Vote/vote.html", (req, res) => {
+//   if (req.session.user) {
+//       console.log(req.session.user);
+//       res.json(req.session.user);
+//   } else {
+//       res.status(401).json({ message: "Unauthorized" });
+//   }
+// });

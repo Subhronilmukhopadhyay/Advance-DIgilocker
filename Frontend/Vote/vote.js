@@ -55,6 +55,7 @@ function submitVote(event) {
         .then(response => response.json())
         .then(data => {
             console.log(data.message);
+            window.location.href = "/";
         })
         .catch(err => {
             console.log(err);
