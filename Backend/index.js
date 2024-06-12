@@ -213,12 +213,12 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     if (!req.session.user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
+    // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
     const hasVoted = req.session.user.voted;
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
-    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[result.rows[0].count]);
+    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
 
   }catch(err){
     console.log(err.message);
