@@ -9,22 +9,33 @@ function selectCandidate(button) {
     radio.style.backgroundColor = 'red';
     radio.setAttribute('data-selected', 'true');
 }
-function submitVote() {
-    
+function submitVote(event) {
+    event.preventDefault();
     const selectedCandidateElement = document.querySelector('.radio[data-selected="true"]');
-    
     if (!selectedCandidateElement) {
         alert('Please select a candidate before proceeding.');
         return;
     }
     
     const selectedCandidate = selectedCandidateElement.getAttribute('data-candidate');
-    
+    const selectedparty = selectedCandidateElement.getAttribute('data-party');
+    console.log(selectedparty);
+    const jsonData = {};
+    jsonData['candidate']=selectedCandidate;
+    jsonData['party']=selectedparty;
     const confirmation = confirm(`Are you sure you want to vote for ${selectedCandidate}?`);
 
     if (confirmation) {
         document.getElementById('proceedButton').disabled = true;
         alert('Your vote has been submitted successfully!');
         // Add your vote submission logic here, e.g., send it to a server
+        fetch('/Digilocker_login/Vote/vote.html', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
     }
 }

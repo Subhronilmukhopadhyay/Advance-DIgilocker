@@ -20,11 +20,24 @@ const saltRounds = 10;
 const db = new pg.Client({
   user: process.env.PG_USER,
   host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
+  database: process.env.PG_DATABASE1,
   password: process.env.PG_PASSWORD,
   port: process.env.PG_PORT,
 });
-db.connect();
+db.connect()
+  .then(() => console.log('Connected to', process.env.PG_DATABASE1))
+  .catch(err => console.error('Connection error', err.stack));
+
+  const db2 = new pg.Client({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE2,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
+  });
+  db2.connect()
+    .then(() => console.log('Connected to', process.env.PG_DATABASE2))
+    .catch(err => console.error('Connection error', err.stack));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -164,6 +177,19 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
         res.json({captchaSuccess: false});
       }
     })
+  }catch(err){
+    console.log(err.message);
+  }
+});
+
+app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
+  try{
+    console.log('Received form data:', req.body);
+    const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
+    // console.log(result.rows[0]);
+    const result2 = await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
+    console.log(result2.rows[0]);
+    console.log(result.rows[0].count);
   }catch(err){
     console.log(err.message);
   }
