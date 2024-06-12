@@ -171,11 +171,11 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
 // });
 app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   try {
-    const hasVoted = req.session.user.voted;
-    const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-    if (result.rows.length > 0) {
-      return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
-    }
+    // const hasVoted = req.session.user.voted;
+    // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+    // if (result.rows.length > 0) {
+    //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+    // }
 
     const recaptchaResponse = req.body["g-recaptcha-response"];
     if (!recaptchaResponse) {
@@ -191,7 +191,7 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
       console.log(req.session.user);
       const hasVoted = req.session.user.voted;
       const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-      console.log(hasVoted);
+      // console.log(hasVoted);
       if (result.rows.length > 0) {
         return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
       }
