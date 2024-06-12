@@ -77,9 +77,14 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
       // res.json({ message: 'Form has been submitted!' });
 
       const checkResult = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
+      const checkResult2 = await db.query("SELECT * FROM voters WHERE mobile = $1", [mobile]);
       if (checkResult.rows.length > 0) {
         return res.status(500).json({ message: `Account Already exist for ${fullName}` });
-      } else {
+      }
+      else if (checkResult2.rows.length > 0) {
+        return res.status(500).json({ message: `Account Already exist for ${fullName}` });
+      } 
+      else {
         bcrypt.hash(pin, saltRounds, async (err, hash) => {
           if (err) {
             return res.send({message: `Error hashing password: ${err}`});
@@ -89,9 +94,12 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
               "INSERT INTO voters (Full_name, DOB, Gender, mobile, aadhaar, pin) VALUES ($1, $2, $3, $4, $5, $6)",
               [fullName, newDOB, gender, mobile, aadhaar, hash]
             );
+            const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [parseInt(mobile)]);;
+            req.session.user = result.rows[0]; 
             res.json({ 
               message: 'Form has been submitted!',
               redirectUrl: '/Voter_Info/voterinfo.html',
+              user: result.rows[0]
             });
           }
         });
@@ -125,10 +133,13 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
           const storedHashedPassword = user.pin;
           bcrypt.compare(req.body.pin, storedHashedPassword, async (err, result) => {
               if (err) {
-                  console.error("Error comparing passwords:", err);
+                  return console.error("Error comparing passwords:", err);
               } else {
                   if (result) {
                       const result2 = await db.query("SELECT * FROM voters_details WHERE aadhaar = $1", [user.aadhaar]);
+                      if(result2.rows.length == 0){
+                        return res.send({ message: "User's voterID not found" });
+                      }
                       req.session.user = result2.rows[0]; 
                       res.json({ 
                           message: "Successfully Logged In",
@@ -136,12 +147,12 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                           user: result2.rows[0]
                       });
                   } else {
-                      res.send({ message: "Incorrect Pin" });
+                      return res.send({ message: "Incorrect Pin" });
                   }
               }
           });
       } else {
-          res.send({ message: "User not found" });
+          return res.send({ message: "User not found" });
       }
   } catch (err) {
       console.log(err);
@@ -149,13 +160,13 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
   }
 });
 
-app.get("/voterinfo", (req, res) => {
-  if (req.session.user) {
-      res.json(req.session.user);
-  } else {
-      res.status(401).json({ message: "Unauthorized" });
-  }
-});
+// app.get("/Digilocker_login/Voter_Info/VoterInfo.html", (req, res) => {
+//   if (req.session.user) {
+//       res.json(req.session.user);
+//   } else {
+//       res.status(401).json({ message: "Unauthorized" });
+//   }
+// });
 
 app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
   try{
@@ -165,26 +176,44 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
       response: req.body['g-recaptcha-response'],
       remoteip: req.ip,
     });
-    fetch('https://www.google.com/recaptcha/api/siteverify' ,{
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: "POST",
       body: params,
-    })
-    .then(res => res.json())
-    .then(data=>{
-      if(data.success){
-        res.json({captchaSuccess: true});
-      } else{
-        res.json({captchaSuccess: false});
-      }
-    })
-  }catch(err){
-    console.log(err.message);
+    });
+
+    const data = await response.json();
+    // console.log(req.session.user.voted);
+    const hasVoted = req.session.user.voted;
+    const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+    if(result.rows.length > 0){
+      res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+    }
+    else if (data.success) {
+      req.session.user = req.body.user;
+      res.json({ captchaSuccess: true });
+    } else {
+      res.json({ captchaSuccess: false });
+    }
+  } catch (err) {
+    res.json({message: "user's voterID not found or Something went wrong"});
   }
 });
+
+// app.get("/Digilocker_login/Vote/vote.html", (req, res) => {
+//   if (req.session.user) {
+//       console.log(req.session.user);
+//       res.json(req.session.user);
+//   } else {
+//       res.status(401).json({ message: "Unauthorized" });
+//   }
+// });
 
 app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
   try{
     console.log('Received form data:', req.body);
+    if (!req.session.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
     const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
     await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[result.rows[0].count]);

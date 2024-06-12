@@ -9,6 +9,14 @@ function selectCandidate(button) {
     radio.style.backgroundColor = 'red';
     radio.setAttribute('data-selected', 'true');
 }
+
+// const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
+// alert(userDetails);
+// if (!userDetails) {
+//     alert("You are not logged in.");
+//     window.location.href = "/";
+// }
+
 function submitVote(event) {
     event.preventDefault();
     const selectedCandidateElement = document.querySelector('.radio[data-selected="true"]');
@@ -37,5 +45,12 @@ function submitVote(event) {
             body: JSON.stringify(jsonData)
         })
         .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+        })
+        .catch(err => {
+            console.log(err);
+            alert("An error occurred. Please try again.");
+        });
     }
 }

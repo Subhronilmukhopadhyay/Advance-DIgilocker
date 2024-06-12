@@ -21,7 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(res => res.json())
         .then(data => {
-            if (data.captchaSuccess) {
+            if(data.hasVoted){
+                alert(data.message);
+                window.location.href = "/";
+            }
+            else if (data.captchaSuccess) {
                 console.log("Validation Success");
                 window.location.href = "../Vote/vote.html";
             } else {
@@ -37,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // New functionality to fetch and display user details
-    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
 
+    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
     if (!userDetails) {
         alert("You are not logged in.");
         window.location.href = "/";
