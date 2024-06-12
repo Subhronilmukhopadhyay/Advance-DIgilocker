@@ -196,7 +196,7 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
         return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
       }
       else{
-        return res.send({ message: "Vote now", hasVoted: hasVoted });
+        return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
       }
     } else {
       return res.status(400).json({ message: "Failed reCAPTCHA verification" });
@@ -219,7 +219,7 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
     await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
-
+    res.json({message: 'Your vote has been submitted successfully!'});
   }catch(err){
     console.log(err.message);
   }
