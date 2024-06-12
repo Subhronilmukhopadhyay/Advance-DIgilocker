@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(e.target);
         const params = new URLSearchParams(formData);
-
+        
         fetch('/Digilocker_login/Voter_Info/VoterInfo.html', {
             method: 'POST',
             body: params,
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert(data.message);
                 window.location.href = "/";
             }
-            else if (data.captchaSuccess) {
+            if (data.captchaSuccess) {
                 console.log("Validation Success");
                 window.location.href = "../Vote/vote.html";
             } else {

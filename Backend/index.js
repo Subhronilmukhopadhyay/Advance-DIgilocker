@@ -57,6 +57,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
+  cookie: { maxAge: 60000 * 5 },
 }));
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
@@ -182,18 +183,20 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
     });
 
     const data = await response.json();
-    // console.log(req.session.user.voted);
+    console.log(data);
+    if (!data.success) {
+      return res.json({ captchaSuccess: false });
+    }
+
+    // CAPTCHA is successful, now check if user has voted
     const hasVoted = req.session.user.voted;
     const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-    if(result.rows.length > 0){
-      res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+    if (result.rows.length > 0) {
+      return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
     }
-    else if (data.success) {
-      req.session.user = req.body.user;
-      res.json({ captchaSuccess: true });
-    } else {
-      res.json({ captchaSuccess: false });
-    }
+
+    req.session.user = req.body.user;
+    res.json({hasVoted: 0, captchaSuccess: true });
   } catch (err) {
     res.json({message: "user's voterID not found or Something went wrong"});
   }
