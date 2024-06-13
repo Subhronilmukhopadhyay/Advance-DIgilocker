@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
-    if (!userDetails) {
-      alert("You are not logged in.");
-      window.location.href = "/";
+    const userDetailsString = sessionStorage.getItem('userDetails');
+
+    if (!userDetailsString) {
+        alert("You are not logged in.");
+        window.location.href = "/";
+        return; 
     }
-    // Set a timeout to redirect to the homepage after 5 minutes (300000 milliseconds)
+
     setTimeout(() => {
         alert("You have been on this page for 5 minutes. Redirecting to homepage.");
         window.location.href = "/";
-    }, 300000); // 5 minutes in milliseconds
+    }, 300000);
 });
 
 function selectCandidate(button) {
