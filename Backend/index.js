@@ -43,13 +43,12 @@ db.connect()
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(express.static("public"));
+// app.use(express.static("Frontend"));
 
-app.use(cors());
+// app.use(cors());
 
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 app.use(express.static(frontendPath));
-
 app.get("/", (req, res) => {
     res.sendFile(path.join(frontendPath, 'HomePage.html'));
 });
@@ -60,6 +59,24 @@ app.use(session({
   saveUninitialized: true,
   cookie: { maxAge: 60000 * 5 },
 }));
+
+const checkAccessCount = (req, res, next) => {
+  if (!req.session.accessCount) {
+    req.session.accessCount = 0;
+  }
+
+  console.log(`Current access count: ${req.session.accessCount}`);
+
+  if (req.session.accessCount >= 3) {
+    console.log("Access limit reached");
+    req.session.accessCount = 0;
+    return res.status(403).send("Access limit reached. You cannot access this page anymore.");
+  } else {
+    req.session.accessCount += 1;
+    console.log(`New access count: ${req.session.accessCount}`);
+    next();
+  }
+};
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const fullName = req.body.fullName;
@@ -162,13 +179,6 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
   }
 });
 
-// app.get("/Digilocker_login/Voter_Info/VoterInfo.html", (req, res) => {
-//   if (req.session.user) {
-//       res.json(req.session.user);
-//   } else {
-//       res.status(401).json({ message: "Unauthorized" });
-//   }
-// });
 app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   try {
     // const hasVoted = req.session.user.voted;
@@ -205,6 +215,13 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   } catch (err) {
     return res.json({ message: "user's voterID not found or Something went wrong" });
   }
+});
+
+app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, (req, res) => {
+  console.log(req.session);
+  // res.set('Content-Type', 'text/css');
+  // res.set('Content-Type', 'application/javascript');
+  res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
 app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{

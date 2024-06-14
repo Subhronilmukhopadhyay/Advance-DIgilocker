@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
           window.location.href = "/";
         } else if (result.hasVoted == 0) {
           sessionStorage.setItem('userDetails', JSON.stringify(data.user));
-          window.location.href = "../Vote/vote.html";
+          // window.location.href = "../Vote/vote.html";
+          window.location.href = "/Digilocker_login/Vote/vote.html";
         } else {
           alert("Failed reCAPTCHA verification or another issue occurred");
         }
