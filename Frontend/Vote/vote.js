@@ -51,7 +51,7 @@ function submitVote(event) {
     if (confirmation) {
         document.getElementById('proceedButton').disabled = true;
         alert('Your vote has been submitted successfully!');
-        // Add your vote submission logic here, e.g., send it to a server
+
         fetch('/Digilocker_login/Vote/vote.html', {
             method: 'POST',
             headers: {
@@ -59,7 +59,12 @@ function submitVote(event) {
             },
             body: JSON.stringify(jsonData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log(data.message);
             window.location.href = "/";
@@ -67,6 +72,7 @@ function submitVote(event) {
         .catch(err => {
             console.log(err);
             alert("An error occurred. Please try again.");
+            document.getElementById('proceedButton').disabled = false;
         });
     }
     
