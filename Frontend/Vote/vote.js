@@ -1,5 +1,7 @@
+let userDetailsString = {}
+
 document.addEventListener('DOMContentLoaded', (event) => {
-    const userDetailsString = sessionStorage.getItem('userDetails');
+    userDetailsString = sessionStorage.getItem('userDetails');
 
     if (!userDetailsString) {
         alert("You are not logged in.");
@@ -52,7 +54,18 @@ function submitVote(event) {
         document.getElementById('proceedButton').disabled = true;
         alert('Your vote has been submitted successfully!');
 
-        fetch('/Digilocker_login/Vote/vote.html', {
+        // userDetailsString = JSON.parse(sessionStorage.getItem('userDetails'));
+        const loginType = userDetailsString.loginType;
+        console.log(userDetailsString);
+        let endpoint = '';
+        if (loginType == 'Digilocker') {
+            endpoint = '/Digilocker_login/Voter_Info/VoterInfo.html';
+        }
+        if (loginType === 'voter') {
+            endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
+        }
+
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import session from "express-session";
 import env from "dotenv";
+import https from "https";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -159,11 +160,11 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       if(result2.rows.length == 0){
                         return res.send({ message: "User's voterID not found" });
                       }
-                      req.session.user = result2.rows[0]; 
+                      req.session.user = {...result2.rows[0]}; 
                       res.json({ 
                           message: "Successfully Logged In",
                           redirectUrl: '../Voter_Info/voterinfo.html',
-                          user: result2.rows[0]
+                          user: {...result2.rows[0], loginType: 'Digilocker',}
                       });
                   } else {
                       return res.send({ message: "Incorrect Pin" });
@@ -179,14 +180,58 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
   }
 });
 
-app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
+app.post('/virtual_election/voter_login', async (req, res) => {
+  const { epicno, phone } = req.body;
+  try {
+    const result = await db.query('SELECT * FROM voters_details WHERE voter_id = $1', [epicno]);
+    if (result.rows.length > 0) {
+      req.session.user = {
+        ...result.rows[0],
+        phone: phone,
+      };
+      console.log(req.session.user);
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, message: 'Invalid Voter ID or phone number' });
+    }
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: 'An error occurred. Please try again.' });
+  }
+});
+
+// Endpoint for OTP verification
+app.post('/virtual_election/verify_otp', (req, res) => {
+  const user_json_url = req.body.user_json_url;
+  https.get(user_json_url, (resp) => {
+    let data = '';
+    resp.on('data', (chunk) => {
+      data += chunk;
+    });
+    resp.on('end', () => {
+      const jsonData = JSON.parse(data);
+      const user_phone_number = jsonData.user_phone_number;
+      console.log(req.session.user);
+      if (req.session.user && req.session.user.phone === user_phone_number) {
+        res.json({ success: true, user: {...req.session.user, loginType: 'voter'}, redirectUrl: '../Voter_Info/voterinfo.html' });
+      } else {
+        res.json({ success: false });
+      }
+    });
+  }).on('error', (err) => {
+    console.log('Error: ' + err.message);
+    res.status(500).json({ success: false, message: 'An error occurred. Please try again.' });
+  });
+});
+
+app.post("/virtual_election/Voter_Info/VoterInfo.html", async (req, res) => {
   try {
     // const hasVoted = req.session.user.voted;
     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
     // if (result.rows.length > 0) {
     //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
     // }
-
+    // console.log(req.body);
     const recaptchaResponse = req.body["g-recaptcha-response"];
     if (!recaptchaResponse) {
       return res.status(400).json({ message: "reCAPTCHA is required" });
@@ -217,11 +262,72 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
+app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
+  try {
+    // const hasVoted = req.session.user.voted;
+    // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+    // if (result.rows.length > 0) {
+    //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+    // }
+    // console.log(req.body);
+    const recaptchaResponse = req.body["g-recaptcha-response"];
+    if (!recaptchaResponse) {
+      return res.status(400).json({ message: "reCAPTCHA is required" });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
+
+    const response = await axios.post(verificationUrl);
+    if (response.data.success) {
+      // Continue with the rest of your logic
+      console.log(req.session.user);
+      const hasVoted = req.session.user.voted;
+      const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+      // console.log(hasVoted);
+      if (result.rows.length > 0) {
+        return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+      }
+      else{
+        return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
+      }
+    } else {
+      return res.status(400).json({ message: "Failed reCAPTCHA verification" });
+    }
+
+  } catch (err) {
+    return res.json({ message: "user's voterID not found or Something went wrong" });
+  }
+});
+
+app.get("/virtual_election/Vote/vote.html", checkAccessCount, (req, res) => {
+  console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
+});
+
 app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, (req, res) => {
   console.log(req.session);
   // res.set('Content-Type', 'text/css');
   // res.set('Content-Type', 'application/javascript');
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
+});
+
+app.post("/virtual_election/Vote/vote.html", async (req, res)=>{
+  try{
+    console.log('Received form data:', req.body);
+    if (!req.session.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
+    // console.log(result.rows[0]);
+    const hasVoted = req.session.user.voted;
+    // console.log(hasVoted);
+    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
+    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
+    res.json({message: 'Your vote has been submitted successfully!'});
+  }catch(err){
+    console.log(err.message);
+  }
 });
 
 app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{

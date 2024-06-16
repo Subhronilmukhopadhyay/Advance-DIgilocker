@@ -34,6 +34,7 @@ function phoneEmailListener(userObj) {
     .then(data => {
         if (data.success) {
             // console.log("success");
+            sessionStorage.setItem('userDetails', JSON.stringify(data.user));
             window.location.href = data.redirectUrl;
         } else {
             alert('OTP verification failed.');
