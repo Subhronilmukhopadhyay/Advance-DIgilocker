@@ -1,64 +1,46 @@
-function validateForm() {
-    // Get the input values
-    var epicNumber = document.getElementById("epicno").value;
-    var phoneNumber = document.getElementById("phone").value;
-    var otp = document.getElementById("otp").value;
-    
-    // Regular expressions for validation
-    var epicRegex = /^[A-Za-z]{3}[0-9]{7}$/;
-    var phoneRegex = /^[0-9]{10}$/;
-    var otpRegex = /^[0-9]{6}$/;
+async function handleSubmit(event) {
+    event.preventDefault();
+    const epicno = document.getElementById('epicno').value;
+    const phone = document.getElementById('phone').value;
 
-    // Validate the EPIC number
-    if (!epicRegex.test(epicNumber)) {
-        alert("Invalid Voter ID/EPIC Number. It should be 3 alphabets followed by 7 digits.");
-        return false;
-    }
-
-    // Validate the phone number
-    if (!phoneRegex.test(phoneNumber)) {
-        alert("Invalid Phone Number. It should be 10 digits.");
-        return false;
-    }
-
-    // Validate the OTP
-    if (!otpRegex.test(otp)) {
-        alert("Invalid OTP. It should be 6 digits.");
-        return false;
-    }
-
-    // If all validations pass
-    alert("Validation successful!");
-    return true;
-}
-
-async function sendOTP() {
-    const phoneNumber = document.getElementById("phone").value;
-
-    const response = await fetch('/send-otp', {
+    const response = await fetch('/virtual_election/voter_login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ phone: phoneNumber })
+        body: JSON.stringify({ epicno, phone })
     });
 
-    const result = await response.json();
-    alert(result.message);
+    const data = await response.json();
+
+    if (data.success) {
+        document.querySelector('form.info').style.display = 'none';
+        document.getElementById('otpSection').style.display = 'block';
+    } else {
+        alert(data.message);
+    }
 }
 
-async function verifyOTP() {
-    const phoneNumber = document.getElementById("phone").value;
-    const otp = document.getElementById("otp").value;
-
-    const response = await fetch('/verify-otp', {
+function phoneEmailListener(userObj) {
+    var user_json_url = userObj.user_json_url;
+    fetch('/virtual_election/verify_otp', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ phone: phoneNumber, otp: otp })
+        body: JSON.stringify({ user_json_url })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // console.log("success");
+            window.location.href = data.redirectUrl;
+        } else {
+            alert('OTP verification failed.');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('An error occurred. Please try again.');
     });
-
-    const result = await response.json();
-    alert(result.message);
 }

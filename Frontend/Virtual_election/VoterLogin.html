@@ -62,53 +62,20 @@
     
     <!-- page1 -->
     <div class="page1">
-        <div class="vep"> Virtual Election Portal </div>
+        <div class="vep">Virtual Election Portal</div>
         <div class="login">
-            <div class="txt">
-                Login
-            </div>
-            <!-- <div class="line1">
-                <div class="orange"></div>
-                <div class="white"></div>
-                <div class="green"></div>
-            </div> -->
-            <div class="info">
-                <input type="text" placeholder="Enter your Voter ID/Epic Number" id="epicno"class="inbox"><br>
-                <input type="number" placeholder="Enter your Phone number" id="phone" class="inbox"><br>
-                <button onclick="sendOTP()">Send OTP</button><br>
-                <input type="number" placeholder="Enter 6-digit OTP" id="otp"class="inbox"><br>
-                <button onclick="verifyOTP()">Verify OTP</button>
-                <button onclick="validateForm()">Proceed</button>
-
+            <div class="txt">Login</div>
+            <form class="info" onsubmit="handleSubmit(event)">
+                <input type="hidden" name="loginType" value="voter">
+                <input type="text" placeholder="Enter your Voter ID/Epic Number" id="epicno" class="inbox" required><br>
+                <input type="number" placeholder="Enter your Phone number" id="phone" class="inbox" required><br>
+                <button type="submit" id="proceedButton">Proceed</button>
+            </form>
+            <div id="otpSection" style="display:none;" >
+                <div class="pe_signin_button" data-client-id="17379979358650166390"></div>
             </div>
         </div>
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -171,7 +138,7 @@
             <p>© Copyright Election Commission of India 2024</p>
         </div>
     </footer>
+    <script src="https://www.phone.email/sign_in_button_v1.js" async></script>
     <script src="VoterLogin.js"></script>
-    <script src="2fa/2fa.js"></script>
 </body>
 </html>
