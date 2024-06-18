@@ -1,3 +1,4 @@
+
 /* navbar------------------------------------------------------------------------- */
 body {
     margin: 0;
@@ -64,6 +65,7 @@ body {
 }
 .navbar2
 {
+    background-color: white;
     height: 50px;
     display: flex;
     justify-content: space-between;
@@ -88,162 +90,55 @@ i:hover
 {
     transform: scale(1.2);
 }
+  
 
-/* page1--------------------------------------------------------------------------------- */
-.page1{
-    font-family: Arial, sans-serif;
-    background-color: #ace8fe;
-    margin-top: 0px;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+.login-box {
+  padding: 20px;
+  /* background-color: #007bff; Blue box */
+  height: 470px;
+  border-radius: 10px;
+  /* text-align: center; */
+  margin-left: 230px;
+  /* margin-top: 100px; */
 }
 
-.container {
+.option-button {
+  padding: 30px;
+  background-color:#5BC8E6; /* Blue */
+  color:#072C5F;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 30px;
+
+}
+
+.option-button:hover {
+  background-color: #d0e9f2; /* Darker blue on hover */
+}
+
+
+.container1{
+    
     width: 100%;
-    max-width: 400px;
-    background-color: rgb(255, 255, 255);
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    margin-top: -120px;
-    border-bottom:#004274;
-    border-bottom-width: thick;
+    height: 638px;
+    z-index: -1;
+    background-image: url(images/onlinevote.png);
+    background-size: contain;
 }
-
-header {
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #f5f5f5;
+.vep
+{
+    font-family: sans-serif;
+    font-size:45px;
+    color:#d0e9f2;
+    padding-top: 150px;
+    padding-left: 250px;
+    
 }
-
-header .emblem {
-    width: 50px;
-    margin-right: 10px;
-}
-
-header .title h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #4a4a4a;
-}
-
-header .title p {
-    margin: 0;
-    font-size: 12px;
-    color: #7a7a7a;
-}
-
-main {
-    padding: 20px;
-}
-
-.signin-box {
-    text-align: center;
-}
-
-.signin-box h2 {
-    margin: 0 0 20px;
-    font-size: 18px;
-    color: #4a4a4a;
-}
-
-.tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
-
-.tab {
-    color: blue;
-    background-color: white;
-    border: none;
-    padding: 10px;
-    flex: 1;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
-.tab:hover{
-    background-color: white;
-    color: blue;
-}
-.tab.active {
-    background-color: #007bff;
-    color: white;
-}
-
-.signin-form {
-    display: none;
-}
-
-.signin-form input[type="text"],
-.signin-form input[type="password"] {
-    width: 100%;
-    padding: 7px;
-    margin: 10px 0;
-    margin-right: -8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    float: right;
-}
-
-.register{
-    display: block;
-    padding: 2px;
-    margin: 10px 0px;
-    margin-top: -9px;
-    margin-bottom: -1px;
-    margin-left: -9px;
-    color: #007bff;
-    font-size: 12px;
-    font-weight:550;
-    text-decoration: none;
-    float: left;
-}
-
-.forgot-pin {
-    display: block;
-    padding: 2px;
-    margin: 10px -10px;
-    margin-top: -1px;
-    color: #007bff;
-    font-size: 14px;
-    text-decoration: none;
-    float: left;
-}
-
-.signin-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #28a745;
-    border: none;
-    color: white;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.signup {
-    margin: 20px 0 0;
-    font-size: 14px;
-    color: #7a7a7a;
-}
-
-.signup a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-
-
-
-/* footer---------------------------------------------------------------------------- */
 .footer {
     
     background-color:#004274;
@@ -252,7 +147,7 @@ main {
     font-size: 14px;
 }
 
-.container2 {
+.container {
     display: flex;
     padding: 40px; 
     justify-content: space-evenly;
@@ -322,3 +217,4 @@ main {
     font-size: 12px;
     background-color: rgba(0, 0, 38,0.2);
 }
+
