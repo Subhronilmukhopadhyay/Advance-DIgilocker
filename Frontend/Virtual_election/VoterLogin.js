@@ -38,8 +38,8 @@ function phoneEmailListener(userObj) {
             sessionStorage.setItem('userDetails', JSON.stringify(data.user));
             window.location.href = data.redirectUrl;
         } else {
-            alert('OTP verification failed.');
-            window.location.reload();
+            alert(data.message);
+            window.location.href = data.redirectUrl;
         }
     })
     .catch(err => {

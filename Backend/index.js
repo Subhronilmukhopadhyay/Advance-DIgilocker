@@ -161,9 +161,8 @@ const updateUserLoginStatus = async (userId, loginType) => {
   );
 };
 
-const clearUserLoginStatus = async (userId, accessCount) => {
+const clearUserLoginStatus = async (userId) => {
   await db.query("UPDATE login_status SET login_type = NULL WHERE user_id = $1", [userId]);
-  await db.query("UPDATE login_status SET login_type = $2 WHERE user_id = $1", [userId, accessCount]);
 };
 
 // const checkActiveSession = (req, res, next) => {
@@ -262,7 +261,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                         return res.send({ message: "User's voterID not found" });
                       }
                       await updateUserLoginStatus(result2.rows[0].voter_id, 'Digilocker');
-                      req.session.user = {...result2.rows[0] , loginType: 'Digilocker'}; 
+                      req.session.user = {...result2.rows[0]}; 
                       res.json({ 
                           message: "Successfully Logged In",
                           redirectUrl: '../Voter_Info/voterinfo.html',
@@ -295,7 +294,6 @@ app.post('/virtual_election/voter_login', async (req, res) => {
       await updateUserLoginStatus(epicno, 'Voter');
       req.session.user = {
         ...result.rows[0],
-        loginType: 'voter',
         phone: phone,
       };
       // console.log(req.session.user);
@@ -317,15 +315,25 @@ app.post('/virtual_election/verify_otp', (req, res) => {
     resp.on('data', (chunk) => {
       data += chunk;
     });
-    resp.on('end', () => {
+    resp.on('end', async () => {
       const jsonData = JSON.parse(data);
       const user_phone_number = jsonData.user_phone_number;
       // console.log(user_phone_number);
       // console.log(req.session.user);
+      // await updateUserLoginStatus(req.session.user.voter_id, 'Voter');
       if (req.session.user && req.session.user.phone === user_phone_number) {
-        res.json({ success: true, user: {...req.session.user, loginType: 'voter'}, redirectUrl: '../Voter_Info/voterinfo.html' });
+        res.json({ success: true, user: {...req.session.user}, redirectUrl: '../Voter_Info/voterinfo.html' });
       } else {
-        res.json({ success: false });
+        try {
+          const logoutResponse = await axios.post('http://localhost:3000/logout');
+          if (logoutResponse.data.success) {
+            res.json({ success: false, message: 'Logged out due to verification failure.', redirectUrl: '/voter_login' });
+          } else {
+            res.json({ success: false, message: 'Verification failed and logout unsuccessful.', redirectUrl: '/voter_login' });
+          }
+        } catch (error) {
+          res.status(500).json({ success: false, message: 'An error occurred during logout. Please try again.' });
+        }
       }
     });
   }).on('error', (err) => {
@@ -460,10 +468,10 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
 });
 
 app.post('/logout', async (req, res) => {
-  const accesscount = req.session.accesscount;
+  // const accesscount = req.session.accesscount;
   if (req.session.user) {
     console.log(req.session.user);
-    await clearUserLoginStatus(req.session.user.voter_id, accesscount);
+    await clearUserLoginStatus(req.session.user.voter_id);
   }
   req.session.destroy((err) => {
       if (err) {
