@@ -18,6 +18,7 @@ async function handleSubmit(event) {
         document.getElementById('otpSection').style.display = 'block';
     } else {
         alert(data.message);
+        window.location.reload();
     }
 }
 
@@ -38,6 +39,7 @@ function phoneEmailListener(userObj) {
             window.location.href = data.redirectUrl;
         } else {
             alert('OTP verification failed.');
+            window.location.reload();
         }
     })
     .catch(err => {

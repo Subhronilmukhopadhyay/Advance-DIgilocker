@@ -90,3 +90,35 @@ function submitVote(event) {
     }
     
 };
+
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault(); 
+        fetch('/logout', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Leaving!");
+                    window.location.href = this.href; 
+                } else {
+                    alert('Failed to log out');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+  });
+  
+  function logout() {
+      fetch('/logout', {
+        method: 'POST',
+        credentials: 'same-origin'
+      }).then(response => {
+        if (response.ok) {
+          console.log('Logged out successfully');
+        } else {
+          console.error('Logout failed');
+        }
+      }).catch(error => {
+        console.error('Error logging out:', error);
+      });
+    }
