@@ -79,6 +79,7 @@
                         <button class="tab" id="tab-aadhaar" onclick="showForm('aadhaar')">Aadhaar</button>
                     </div>
                     <form id="signin-form" onsubmit="handleSubmit(event)">
+                        <input type="hidden" name="loginType" value="digilocker">
                         <div id="mobile" class="signin-form">
                             <input type="text" name="mobile" placeholder="Mobile*">
                             <input type="password" name="mobile-pin" placeholder="6 digit security PIN*">

@@ -37,6 +37,7 @@ function handleSubmit(event) {
     const activeTab = document.querySelector('.tab.active');
     let formData;
     let isValid = true;
+    const submitButton = document.querySelector('.signin-button');
 
     if (activeTab.id === 'tab-mobile') {
         const mobile = document.querySelector('input[name="mobile"]').value;
@@ -77,7 +78,9 @@ function handleSubmit(event) {
     }
 
     if (isValid) {
-        console.log('Form Data:', formData);
+        // console.log('Form Data:', formData);
+        submitButton.innerText = 'Logging in...';
+        submitButton.disabled = true;
         fetch('/Digilocker_login/digilogin.html', {
             method: 'POST',
             headers: {

@@ -1,9 +1,18 @@
+let userDetailsString = {}
+
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Set a timeout to redirect to the homepage after 5 minutes (300000 milliseconds)
+    userDetailsString = sessionStorage.getItem('userDetails');
+
+    if (!userDetailsString) {
+        alert("You are not logged in.");
+        window.location.href = "/";
+        return; 
+    }
+
     setTimeout(() => {
         alert("You have been on this page for 5 minutes. Redirecting to homepage.");
         window.location.href = "/";
-    }, 300000); // 5 minutes in milliseconds
+    }, 300000);
 });
 
 function selectCandidate(button) {
@@ -44,15 +53,31 @@ function submitVote(event) {
     if (confirmation) {
         document.getElementById('proceedButton').disabled = true;
         alert('Your vote has been submitted successfully!');
-        // Add your vote submission logic here, e.g., send it to a server
-        fetch('/Digilocker_login/Vote/vote.html', {
+
+        // userDetailsString = JSON.parse(sessionStorage.getItem('userDetails'));
+        const loginType = userDetailsString.loginType;
+        console.log(userDetailsString);
+        let endpoint = '';
+        if (loginType == 'Digilocker') {
+            endpoint = '/Digilocker_login/Voter_Info/VoterInfo.html';
+        }
+        if (loginType === 'voter') {
+            endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
+        }
+
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(jsonData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log(data.message);
             window.location.href = "/";
@@ -60,6 +85,40 @@ function submitVote(event) {
         .catch(err => {
             console.log(err);
             alert("An error occurred. Please try again.");
+            document.getElementById('proceedButton').disabled = false;
         });
     }
-}
+    
+};
+
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault(); 
+        fetch('/logout', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Leaving!");
+                    window.location.href = this.href; 
+                } else {
+                    alert('Failed to log out');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+  });
+  
+  function logout() {
+      fetch('/logout', {
+        method: 'POST',
+        credentials: 'same-origin'
+      }).then(response => {
+        if (response.ok) {
+          console.log('Logged out successfully');
+        } else {
+          console.error('Logout failed');
+        }
+      }).catch(error => {
+        console.error('Error logging out:', error);
+      });
+    }

@@ -1,39 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
-  
-    document.getElementById('captchaForm').addEventListener('submit', (e) => {
+  // Handle form submission
+  document.getElementById('captchaForm').addEventListener('submit', (e) => {
       e.preventDefault();
-  
+
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
-  
-      fetch('/Digilocker_login/Voter_Info/VoterInfo.html', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+    //   console.log(data);
+      const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
+      const loginType = userDetails.loginType;
+      console.log(loginType);
+      let endpoint = '';
+      if (loginType == 'Digilocker') {
+        endpoint = '/Digilocker_login/Voter_Info/VoterInfo.html';
+      }
+      if (loginType === 'voter') {
+          endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
+      }
+
+      fetch(endpoint, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
       })
       .then(response => response.json())
       .then(result => {
-        if (result.hasVoted == 1) {
-          alert(result.message);
-          window.location.href = "/";
-        } else if (result.hasVoted == 0) {
-          window.location.href = "../Vote/vote.html";
-        } else {
-          alert("Failed reCAPTCHA verification or another issue occurred");
-        }
+          if (result.hasVoted == 1) {
+              alert(result.message);
+              window.location.href = "/";
+          } else if (result.hasVoted == 0) {
+              sessionStorage.setItem('userDetails', JSON.stringify(data.user));
+              // Conditional redirect based on login type
+              if (loginType === 'Digilocker') {
+                  window.location.href = "/Digilocker_login/Vote/vote.html";
+              } else if (loginType === 'voter') {
+                  window.location.href = "/virtual_election/Vote/vote.html";
+              }
+          } else {
+              alert("Failed reCAPTCHA verification or another issue occurred");
+          }
       })
       .catch(err => {
-        console.error("Error:", err);
-        alert("Something went wrong, please try again later.");
+          console.error("Error:", err);
+          alert("Something went wrong, please try again later.");
       });
-    });
-    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
-    if (!userDetails) {
+  });
+
+  // Fetch and display user details if logged in
+  const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
+  if (!userDetails) {
       alert("You are not logged in.");
       window.location.href = "/";
-    } else {
+  } else {
       document.getElementById('voter-id').textContent = userDetails.voter_id;
       document.getElementById('constituency').textContent = userDetails.constituency;
       document.getElementById('aadhaar').textContent = userDetails.aadhaar;
@@ -42,6 +61,37 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('father-name').textContent = userDetails.name_of_father_of_voter;
       document.getElementById('gender').textContent = userDetails.gender;
       document.getElementById('address').textContent = userDetails.address;
-    }
+  }
 });
-  
+
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent the default link action
+      // Perform logout
+      fetch('/logout', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  window.location.href = this.href; // Navigate to the link after logging out
+              } else {
+                  alert('Failed to log out');
+              }
+          })
+          .catch(error => console.error('Error:', error));
+  });
+});
+
+function logout() {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'same-origin'
+    }).then(response => {
+      if (response.ok) {
+        console.log('Logged out successfully');
+      } else {
+        console.error('Logout failed');
+      }
+    }).catch(error => {
+      console.error('Error logging out:', error);
+    });
+  }
