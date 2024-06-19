@@ -80,6 +80,7 @@ function submitVote(event) {
         })
         .then(data => {
             console.log(data.message);
+            logout();
             window.location.href = "/";
         })
         .catch(err => {

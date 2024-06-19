@@ -3,7 +3,6 @@ import bodyParser from "body-parser";
 import path from "path";
 import pg from "pg";
 import bcrypt from "bcrypt";
-import cors from"cors";
 import axios from "axios";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -51,7 +50,7 @@ app.use(bodyParser.json());
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 app.use(express.static(frontendPath));
 app.get("/", (req, res) => {
-    res.sendFile(path.join(frontendPath, 'HomePage.html'));
+    res.sendFile(path.join(frontendPath, 'nationality.html'));
 });
 
 app.use(session({
@@ -146,7 +145,7 @@ const checkUserLoginStatus = async (userId) => {
     const result = await db.query(
       "SELECT login_type FROM login_status WHERE user_id = $1", [userId]
     );
-    console.log(result.rows[0].login_type);
+    // console.log(result.rows[0].login_type);
     return result.rows[0].login_type != null;
   } catch (error) {
     console.error("Error checking user login status:", error);
@@ -186,7 +185,7 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const newDOB = DOB.toISOString().slice(0, 10);
   
   try {
-      console.log('Received form data:', req.body);
+      // console.log('Received form data:', req.body);
       // res.json({ message: 'Form has been submitted!' });
 
       const checkResult = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
@@ -202,7 +201,7 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
           if (err) {
             return res.send({message: `Error hashing password: ${err}`});
           } else {
-            console.log("Hashed Password:", hash);
+            // console.log("Hashed Password:", hash);
             await db.query(
               "INSERT INTO voters (Full_name, DOB, Gender, mobile, aadhaar, pin) VALUES ($1, $2, $3, $4, $5, $6)",
               [fullName, newDOB, gender, mobile, aadhaar, hash]
@@ -432,7 +431,7 @@ app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, (req, res) => {
 
 app.post("/virtual_election/Vote/vote.html", async (req, res)=>{
   try{
-    console.log('Received form data:', req.body);
+    // console.log('Received form data:', req.body);
     if (!req.session.user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -470,7 +469,7 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
 app.post('/logout', async (req, res) => {
   // const accesscount = req.session.accesscount;
   if (req.session.user) {
-    console.log(req.session.user);
+    // console.log(req.session.user);
     await clearUserLoginStatus(req.session.user.voter_id);
   }
   req.session.destroy((err) => {

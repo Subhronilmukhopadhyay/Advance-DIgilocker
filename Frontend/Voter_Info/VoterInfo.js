@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(result => {
           if (result.hasVoted == 1) {
               alert(result.message);
+              logout();
               window.location.href = "/";
           } else if (result.hasVoted == 0) {
               sessionStorage.setItem('userDetails', JSON.stringify(data.user));
