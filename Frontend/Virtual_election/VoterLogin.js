@@ -45,5 +45,23 @@ function phoneEmailListener(userObj) {
     .catch(err => {
         console.error(err);
         alert('An error occurred. Please try again.');
+        window.location.href = "/";
     });
 }
+
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default link action
+        // Perform logout
+        fetch('/logout', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = this.href; // Navigate to the link after logging out
+                } else {
+                    alert('Failed to log out');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+  });

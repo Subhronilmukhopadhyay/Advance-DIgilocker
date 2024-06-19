@@ -64,24 +64,24 @@ const checkAccessCount = async (req, res, next) => {
   try{
     // console.log(req.session);
     const result = await db.query("SELECT accesscount FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
-    console.log(result.rows[0]);
+    // console.log(result.rows[0]);
     const loginType = result.rows[0].accesscount;
     if (loginType == 0) {
       req.session.user.accessCount = 0;
     } else{
       req.session.user.accessCount = loginType;
     }
-    console.log(`Current access count: ${req.session.user.accessCount}`);
+    // console.log(`Current access count: ${req.session.user.accessCount}`);
   
     if (req.session.user.accessCount >= 3) {
-      console.log("Access limit reached");
+      // console.log("Access limit reached");
       req.session.user.accessCount = 0;
       await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, req.session.user.accessCount]);
       return res.status(403).send("Access limit reached. You cannot access this page anymore.");
     } else {
       req.session.user.accessCount += 1;
       await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, req.session.user.accessCount]);
-      console.log(`New access count: ${req.session.user.accessCount}`);
+      // console.log(`New access count: ${req.session.user.accessCount}`);
       next();
     }
   }catch(err){
@@ -89,55 +89,6 @@ const checkAccessCount = async (req, res, next) => {
   }
   
 };
-
-// const checkUserLoginStatus = async (req, res, next) => {
-//   const user = req.session.user;
-//   console.log(user);
-//   if (user) {
-//     const result = await db.query("SELECT login_type FROM login_status WHERE user_id = $1", [user.id]);
-//     console.log(user);
-//     if (result.rows.length > 0) {
-//       const loginType = result.rows[0].login_type;
-//       if (loginType && loginType !== req.body.loginType) {
-//         return res.status(403).json({ message: "User already logged in with another method" });
-//       }
-//     }
-//   }
-//   next();
-// };
-
-// const checkUserLoginStatus2 = async (req, res, next) => {
-//   const user = req.session.user;
-//   let user2 = null;
-//   console.log(user);
-//   if (user.type === "Mobile") {
-//       const mobile = user.mobile;
-//       const result = await db.query("SELECT * FROM voters WHERE mobile = $1", [parseInt(mobile)]);
-//       user2 = result.rows[0];
-//   } else if (user.type === "Username") {
-//       const username = user.username;
-//       const result = await db.query("SELECT * FROM voters WHERE Full_name = $1", [username]);
-//       user2 = result.rows[0];
-//   } else if (user.type === "Aadhaar") {
-//       const aadhaar = user.aadhaar;
-//       const result = await db.query("SELECT * FROM voters WHERE aadhaar = $1", [aadhaar]);
-//       user2 = result.rows[0];
-//   }
-
-//   if (user2) {
-//     const result1 = await db.query("SELECT voter_id FROM voters_details WHERE user_id = $1", [user2.id]);
-//     const result = await db.query("SELECT login_type FROM login_status WHERE user_id = $1", [result1.rows[0].voter_id]);
-//     console.log(user2);
-//     console.log(result);
-//     if (result.rows.length > 0) {
-//       const loginType = result.rows[0].login_type;
-//       if (loginType && loginType !== req.body.loginType) {
-//         return res.status(403).json({ message: "User already logged in with another method" });
-//       }
-//     }
-//   }
-//   next();
-// };
 
 const checkUserLoginStatus = async (userId) => {
   try {
@@ -163,13 +114,6 @@ const updateUserLoginStatus = async (userId, loginType) => {
 const clearUserLoginStatus = async (userId) => {
   await db.query("UPDATE login_status SET login_type = NULL WHERE user_id = $1", [userId]);
 };
-
-// const checkActiveSession = (req, res, next) => {
-//   if (req.session.user && req.session.user.loginType) {
-//     return res.status(403).json({ message: "User already logged in" });
-//   }
-//   next();
-// };
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const fullName = req.body.fullName;
@@ -485,57 +429,3 @@ app.post('/logout', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-// app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res)=>{
-//   try{
-//     // console.log('Received form data:', req.body);
-//     const params = new URLSearchParams({
-//       secret: '6LdUEfUpAAAAAG0Gq3Qza8fYvtUh0IrxzJvHxoxL',
-//       response: req.body['g-recaptcha-response'],
-//       remoteip: req.ip,
-//     });
-//     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-//       method: "POST",
-//       body: params,
-//     });
-
-//     const data = await response.json();
-//     console.log(data);
-//     if (!data.success) {
-//       return res.json({ captchaSuccess: false });
-//     }
-
-//     // CAPTCHA is successful, now check if user has voted
-//     const hasVoted = req.session.user.voted;
-//     const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-//     if (result.rows.length > 0) {
-//       return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
-//     }
-
-//     req.session.user = req.body.user;
-//     res.json({hasVoted: 0, captchaSuccess: true });
-//   } catch (err) {
-//     res.json({message: "user's voterID not found or Something went wrong"});
-//   }
-// });
-
-// app.get("/Digilocker_login/Vote/vote.html", (req, res) => {
-//   if (req.session.user) {
-//       console.log(req.session.user);
-//       res.json(req.session.user);
-//   } else {
-//       res.status(401).json({ message: "Unauthorized" });
-//   }
-// });
