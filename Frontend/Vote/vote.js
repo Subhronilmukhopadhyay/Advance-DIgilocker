@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     setTimeout(() => {
         alert("You have been on this page for 5 minutes. Redirecting to homepage.");
+        logout();
         window.location.href = "/";
     }, 300000);
 });

@@ -238,6 +238,7 @@ app.post('/virtual_election/voter_login', async (req, res) => {
       req.session.user = {
         ...result.rows[0],
         phone: phone,
+        loginType: 'voter',
       };
       // console.log(req.session.user);
       res.json({ success: true });
