@@ -124,3 +124,9 @@ document.querySelectorAll('a').forEach(link => {
         console.error('Error logging out:', error);
       });
     }
+
+window.addEventListener('beforeunload', function(e) {
+    alert("refresh");
+    navigator.sendBeacon('/logout', JSON.stringify({ user: userDetailsString }));
+    window.location.href = "/";
+});

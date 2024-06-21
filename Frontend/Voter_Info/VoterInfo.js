@@ -67,32 +67,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent the default link action
-      // Perform logout
-      fetch('/logout', { method: 'POST' })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  window.location.href = this.href; // Navigate to the link after logging out
-              } else {
-                  alert('Failed to log out');
-              }
-          })
-          .catch(error => console.error('Error:', error));
+    event.preventDefault(); // Prevent the default link action
+    // Perform logout
+    fetch('/logout', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = this.href; // Navigate to the link after logging out
+        } else {
+            alert('Failed to log out');
+        }
+    })
+    .catch(error => console.error('Error:', error));
   });
 });
 
 function logout() {
-    fetch('/logout', {
-      method: 'POST',
-      credentials: 'same-origin'
-    }).then(response => {
-      if (response.ok) {
-        console.log('Logged out successfully');
-      } else {
-        console.error('Logout failed');
-      }
-    }).catch(error => {
-      console.error('Error logging out:', error);
-    });
-  }
+  fetch('/logout', {
+    method: 'POST',
+    credentials: 'same-origin'
+  }).then(response => {
+    if (response.ok) {
+      console.log('Logged out successfully');
+    } else {
+      console.error('Logout failed');
+    }
+  }).catch(error => {
+    console.error('Error logging out:', error);
+  });
+}
+
+window.addEventListener('beforeunload', function(e) {
+  alert("refresh");
+  navigator.sendBeacon('/logout', JSON.stringify({ user: JSON.parse(sessionStorage.getItem('userDetails')) }));
+  window.location.href = "/";
+});
