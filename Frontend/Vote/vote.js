@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return; 
     }
 
+    // if (sessionStorage.getItem('logoutInProgress') === 'true') {
+    //     sessionStorage.removeItem('logoutInProgress');
+    //     window.location.href = "/";
+    //     return;
+    // }
+
     setTimeout(() => {
         alert("You have been on this page for 5 minutes. Redirecting to homepage.");
         logout();
@@ -110,23 +116,20 @@ document.querySelectorAll('a').forEach(link => {
     });
   });
   
-  function logout() {
-      fetch('/logout', {
-        method: 'POST',
-        credentials: 'same-origin'
-      }).then(response => {
-        if (response.ok) {
-          console.log('Logged out successfully');
-        } else {
-          console.error('Logout failed');
-        }
-      }).catch(error => {
-        console.error('Error logging out:', error);
-      });
+function logout() {
+    fetch('/logout', {
+    method: 'POST',
+    }).then(response => {
+    if (response.ok) {
+        console.log('Logged out successfully');
+    } else {
+        console.error('Logout failed');
     }
+    }).catch(error => {
+    console.error('Error logging out:', error);
+    });
+}
 
 window.addEventListener('beforeunload', function(e) {
-    alert("refresh");
-    navigator.sendBeacon('/logout', JSON.stringify({ user: userDetailsString }));
-    window.location.href = "/";
+    navigator.sendBeacon('/logout', JSON.stringify({ user: JSON.parse(sessionStorage.getItem('userDetails')) }));
 });

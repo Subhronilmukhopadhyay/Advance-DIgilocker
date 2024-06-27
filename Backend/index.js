@@ -63,31 +63,36 @@ app.use(session({
 const checkAccessCount = async (req, res, next) => {
   try{
     // console.log(req.session);
-    const result = await db.query("SELECT accesscount FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
+    const result = await db.query("SELECT accesscount,start_date,start_time,end_time FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
     // console.log(result.rows[0]);
-    const loginType = result.rows[0].accesscount;
-    if (loginType == 0) {
-      req.session.user.accessCount = 0;
-    } else{
-      req.session.user.accessCount = loginType;
-    }
+    let accessCount = result.rows[0].accesscount;
     // console.log(`Current access count: ${req.session.user.accessCount}`);
-  
-    if (req.session.user.accessCount >= 3) {
-      // console.log("Access limit reached");
-      req.session.user.accessCount = 0;
-      await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, req.session.user.accessCount]);
-      return res.status(403).send("Access limit reached. You cannot access this page anymore.");
+
+    const {start_date, start_time, end_time } = result.rows[0];
+
+    const currentDate = new Date();
+
+    const slotStartDate = new Date(`${start_date}T${start_time}`);
+    const slotEndDate = new Date(`${start_date}T${end_time}`);
+
+    if (currentDate >= slotStartDate && currentDate <= slotEndDate) {
+      if (accessCount >= 3) {
+        // console.log("Access limit reached");
+        accessCount = 0;
+        await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount]);
+        return res.status(403).send("Access limit reached. You cannot access this page anymore.");
+      } else {
+        accessCount += 1;
+        await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount]);
+        // console.log(`New access count: ${req.session.user.accessCount}`);
+        next();
+      }
     } else {
-      req.session.user.accessCount += 1;
-      await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, req.session.user.accessCount]);
-      // console.log(`New access count: ${req.session.user.accessCount}`);
-      next();
+      return res.status(403).send("Access is only allowed during the specified slot timings.");
     }
   }catch(err){
     console.log(err.message);
   }
-  
 };
 
 const checkUserLoginStatus = async (userId) => {

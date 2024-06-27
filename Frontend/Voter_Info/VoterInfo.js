@@ -85,7 +85,6 @@ document.querySelectorAll('a').forEach(link => {
 function logout() {
   fetch('/logout', {
     method: 'POST',
-    credentials: 'same-origin'
   }).then(response => {
     if (response.ok) {
       console.log('Logged out successfully');
