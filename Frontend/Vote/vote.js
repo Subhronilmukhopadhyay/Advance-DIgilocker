@@ -2,12 +2,14 @@ let userDetailsString = {}
 
 document.addEventListener('DOMContentLoaded', (event) => {
     userDetailsString = sessionStorage.getItem('userDetails');
-
+    // console.log(userDetailsString);
     if (!userDetailsString) {
         alert("You are not logged in.");
         window.location.href = "/";
         return; 
     }
+
+    startVideoProcessing();
 
     // if (sessionStorage.getItem('logoutInProgress') === 'true') {
     //     sessionStorage.removeItem('logoutInProgress');
@@ -133,3 +135,109 @@ function logout() {
 window.addEventListener('beforeunload', function(e) {
     navigator.sendBeacon('/logout', JSON.stringify({ user: JSON.parse(sessionStorage.getItem('userDetails')) }));
 });
+
+function startVideoProcessing() {
+    // Implement your logic to start video processing here
+    // Example: establish WebSocket connection, initialize video capture, etc.
+    // Ensure to handle video processing and sending data back to server if needed
+    // let video;
+    let div = null;
+    let stream;
+    let captureCanvas;
+    let imgElement;
+
+    let pendingResolve = null;
+    let shutdown = false;
+
+    // Free resources once video stream stops.
+    function removeDom() {
+        stream.getVideoTracks()[0].stop();
+        video.remove();
+        div.remove();
+        video = null;
+        div = null;
+        stream = null;
+        imgElement = null;
+        captureCanvas = null;
+    }
+
+    // Draw every frame on Colab until the stream stops.
+    function onAnimationFrame() {
+        if (!shutdown) {
+            window.requestAnimationFrame(onAnimationFrame);
+        }
+        if (pendingResolve) {
+            let result = "";
+            if (!shutdown) {
+                captureCanvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+                result = captureCanvas.toDataURL('image/jpeg', 0.8)
+            }
+            let lp = pendingResolve;
+            pendingResolve = null;
+            lp(result);
+        }
+    }
+
+    // Create div to hold video stream and button.
+    async function createDom() {
+        if (div !== null) {
+            return stream;
+        }
+        div = document.createElement('div');
+        div.style.border = '2px solid black';
+        div.style.padding = '3px';
+        div.style.width = '100%';
+        div.style.maxWidth = '600px';
+        document.body.appendChild(div);
+
+        video = document.createElement('video');
+        video.style.display = 'block';
+        video.width = div.clientWidth - 6;
+        video.setAttribute('playsinline', '');
+        video.onclick = () => { shutdown = true; };
+        stream = await navigator.mediaDevices.getUserMedia(
+            {video: { facingMode: "environment"}});
+        div.appendChild(video);
+
+        imgElement = document.createElement('img');
+        imgElement.style.position = 'absolute';
+        imgElement.style.zIndex = 1;
+        imgElement.onclick = () => { shutdown = true; };
+        div.appendChild(imgElement);
+
+        const instruction = document.createElement('div');
+        instruction.innerHTML =
+            '<span style="blue: red; font-weight: bold;">' +
+            'click here to stop the video</span>';
+        div.appendChild(instruction);
+        instruction.onclick = () => { shutdown = true; };
+
+        video.srcObject = stream;
+        await video.play();
+        captureCanvas = document.createElement('canvas');
+        captureCanvas.width = 640;
+        captureCanvas.height = 480;
+        window.requestAnimationFrame(onAnimationFrame);
+
+        return stream;
+    }
+
+    // Function to manage the whole Javascript code.
+    async function stream_frame() {
+        if (shutdown) {
+            removeDom();
+            shutdown = false;
+            return '';
+        }
+
+        stream = await createDom();
+
+        let result = await new Promise(function(resolve, reject) {
+            pendingResolve = resolve;
+        });
+        shutdown = false;
+
+        return result
+    }
+}
+

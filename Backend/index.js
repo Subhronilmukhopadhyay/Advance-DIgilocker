@@ -9,6 +9,7 @@ import { dirname } from 'path';
 import session from "express-session";
 import env from "dotenv";
 import https from "https";
+import { ChildProcess, exec, spawn } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,33 +64,53 @@ app.use(session({
 const checkAccessCount = async (req, res, next) => {
   try{
     // console.log(req.session);
-    const result = await db.query("SELECT accesscount,start_date,start_time,end_time FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
+    const result = await db.query("SELECT accesscount, start_date::date AS start_date, start_time,end_time FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
     // console.log(result.rows[0]);
     let accessCount = result.rows[0].accesscount;
     // console.log(`Current access count: ${req.session.user.accessCount}`);
 
     const {start_date, start_time, end_time } = result.rows[0];
+    const startDateWithoutTime = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
+
+    console.log(startDateWithoutTime);
 
     const currentDate = new Date();
-
+    // console.log(currentDate);
+    console.log(start_date);
+    // console.log(start_time);
+    // console.log(end_time);
     const slotStartDate = new Date(`${start_date}T${start_time}`);
+    // console.log(slotStartDate);
     const slotEndDate = new Date(`${start_date}T${end_time}`);
+    // console.log(slotEndDate);
 
-    if (currentDate >= slotStartDate && currentDate <= slotEndDate) {
+    // if (currentDate >= slotStartDate && currentDate <= slotEndDate) {
       if (accessCount >= 3) {
         // console.log("Access limit reached");
         accessCount = 0;
         await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount]);
-        return res.status(403).send("Access limit reached. You cannot access this page anymore.");
+        await clearUserLoginStatus(req.session.user.voter_id);
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error destroying session:", err);
+            }
+            res.status(403).send("Access limit reached. You cannot access this page anymore.");
+        });
       } else {
         accessCount += 1;
         await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount]);
         // console.log(`New access count: ${req.session.user.accessCount}`);
         next();
       }
-    } else {
-      return res.status(403).send("Access is only allowed during the specified slot timings.");
-    }
+    // } else {
+    //   await clearUserLoginStatus(req.session.user.voter_id);
+    //   req.session.destroy((err) => {
+    //       if (err) {
+    //           console.error("Error destroying session:", err);
+    //       }
+    //       res.status(403).send("Access is only allowed during the specified slot timings.");
+    //   });
+    // }
   }catch(err){
     console.log(err.message);
   }
@@ -388,8 +409,9 @@ app.post("/virtual_election/Vote/vote.html", async (req, res)=>{
     // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
     const hasVoted = req.session.user.voted;
+    const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
-    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
+    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
     await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
     res.json({message: 'Your vote has been submitted successfully!'});
   }catch(err){
@@ -407,8 +429,9 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
     // console.log(result.rows[0]);
     const hasVoted = req.session.user.voted;
+    const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
-    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voted = $1", [hasVoted]);
+    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
     await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
     res.json({message: 'Your vote has been submitted successfully!'});
   }catch(err){
