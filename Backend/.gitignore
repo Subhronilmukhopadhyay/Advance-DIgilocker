@@ -1,7 +1,7 @@
 # node_modules/
 # package-lock.json
 # package.json
-.env
+# .env
 PROJECT_VOTING_SYSTEM/Face_detection.ipynb
 PROJECT_VOTING_SYSTEM/faceMonitor.py
 PROJECT_VOTING_SYSTEM/webcam_face_detection.py
