@@ -459,7 +459,7 @@ app.post('/virtual_election/verify_otp', (req, res) => {
 
 app.get("/Voter_Info/voterInfo.html", (req, res) => {
   // console.log(req.session);
-  res.sendFile(path.join(frontendPath, 'Voter_Info', 'voterInfo.html'));
+  res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
 });
 
 app.post("/Voter_Info/voterInfo.html", async (req, res) => {
