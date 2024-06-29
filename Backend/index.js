@@ -35,20 +35,20 @@ db.connect()
 //   password: process.env.PG_PASSWORD,
 //   port: process.env.PG_PORT,
 // });
-db.connect()
-  .then(() => console.log('Connected to', process.env.PG_DATABASE1))
-  .catch(err => console.error('Connection error', err.stack));
+// db.connect()
+//   .then(() => console.log('Connected to', process.env.PG_DATABASE1))
+//   .catch(err => console.error('Connection error', err.stack));
 
-  const db2 = new pg.Client({
-    user: process.env.PG_USER,
-    host: process.env.PG_HOST,
-    database: process.env.PG_DATABASE2,
-    password: process.env.PG_PASSWORD,
-    port: process.env.PG_PORT,
-  });
-  db2.connect()
-    .then(() => console.log('Connected to', process.env.PG_DATABASE2))
-    .catch(err => console.error('Connection error', err.stack));
+//   const db2 = new pg.Client({
+//     user: process.env.PG_USER,
+//     host: process.env.PG_HOST,
+//     database: process.env.PG_DATABASE2,
+//     password: process.env.PG_PASSWORD,
+//     port: process.env.PG_PORT,
+//   });
+//   db2.connect()
+//     .then(() => console.log('Connected to', process.env.PG_DATABASE2))
+//     .catch(err => console.error('Connection error', err.stack));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
