@@ -1,6 +1,7 @@
 import cv2
 import sys
 import time
+import os
 
 class FaceDetector:
     def __init__(self, faceCascadePath):
@@ -31,7 +32,9 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     resized = cv2.resize(image, dim, interpolation=inter)
     return resized
 
-fd = FaceDetector('\\Required_Models_(2_7)\\haarcascade_frontalface_default.xml')
+current_directory = os.path.dirname(__file__)
+xml_file_path = os.path.join(current_directory, 'Required_Models_(2_7)', 'haarcascade_frontalface_default.xml')
+fd = FaceDetector(xml_file_path)
 webcam = cv2.VideoCapture(0)
 
 start_time = time.time()
