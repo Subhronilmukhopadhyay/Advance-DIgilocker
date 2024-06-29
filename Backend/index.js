@@ -9,7 +9,7 @@ import { dirname } from 'path';
 import session from "express-session";
 import env from "dotenv";
 import https from "https";
-import { ChildProcess, exec, spawn } from "child_process";
+import { exec } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,6 +18,15 @@ env.config();
 const app = express();
 const port = 3000;
 const saltRounds = 10;
+
+// const { Pool } = pg;
+
+// const db = new Pool({
+//   connectionString: process.env.POSTGRES_URL,
+// })
+// db.connect()
+// .then(() => console.log('Connected to', process.env.PG_DATABASE))
+// .catch(err => console.error('Connection error', err.stack));
 
 const db = new pg.Client({
   user: process.env.PG_USER,
@@ -61,6 +70,40 @@ app.use(session({
   cookie: { maxAge: 60000 * 5 },
 }));
 
+const checkFaceDetection = async (req, res, next) => {
+  try {
+      
+      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, async (error, stdout, stderr) => {
+          if (error) {
+              console.error(`exec error: ${error}`);
+              await clearUserLoginStatus(req.session.user.voter_id);
+              req.session.destroy((e) => {
+                if (e) {
+                    console.error("Error destroying session:", e);
+                }
+              });
+              return res.status(500).send("Error executing face detection script");
+          }
+
+          if (stdout.includes("Face detected")) {
+              next();
+          } else {
+              await clearUserLoginStatus(req.session.user.voter_id);
+              req.session.destroy((e) => {
+                if (e) {
+                    console.error("Error destroying session:", e);
+                }
+              });
+              res.status(403).send("Face not detected. Access denied.");
+          }
+      });
+  } catch (err) {
+      console.error(`Caught error: ${err}`);
+      res.status(500).send("An unexpected error occurred");
+  }
+};
+
+
 const checkAccessCount = async (req, res, next) => {
   try{
     // console.log(req.session);
@@ -71,7 +114,7 @@ const checkAccessCount = async (req, res, next) => {
 
     const {start_date, start_time, end_time } = result.rows[0];
     const startDateWithoutTime = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
-
+    // const truncatedDate = result.rows[0].start_date.split('T')[0];
     console.log(startDateWithoutTime);
 
     const currentDate = new Date();
@@ -112,6 +155,12 @@ const checkAccessCount = async (req, res, next) => {
     //   });
     // }
   }catch(err){
+    await clearUserLoginStatus(req.session.user.voter_id);
+    req.session.destroy((e) => {
+      if (e) {
+          console.error("Error destroying session:", e);
+      }
+    });
     console.log(err.message);
   }
 };
@@ -346,6 +395,7 @@ app.post("/virtual_election/Voter_Info/VoterInfo.html", async (req, res) => {
     }
 
   } catch (err) {
+    
     return res.json({ message: "user's voterID not found or Something went wrong" });
   }
 });
@@ -388,12 +438,12 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/virtual_election/Vote/vote.html", checkAccessCount, (req, res) => {
+app.get("/virtual_election/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, (req, res) => {
+app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   // res.set('Content-Type', 'text/css');
   // res.set('Content-Type', 'application/javascript');

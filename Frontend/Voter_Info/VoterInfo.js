@@ -39,7 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   window.location.href = "/virtual_election/Vote/vote.html";
               }
           } else {
+              // alert(result.message);
               alert("Failed reCAPTCHA verification or another issue occurred");
+              window.location.href = '/';
           }
       })
       .catch(err => {
@@ -87,6 +89,7 @@ function logout() {
     method: 'POST',
   }).then(response => {
     if (response.ok) {
+      // alert("hi");
       console.log('Logged out successfully');
     } else {
       console.error('Logout failed');
