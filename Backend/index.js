@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 env.config();
 
 const app = express();
-const port = 3000;
+const port = 5000;
 const saltRounds = 10;
 
 const { Pool } = pg;
@@ -456,7 +456,7 @@ app.post('/virtual_election/verify_otp', (req, res) => {
   });
 });
 
-app.post("/virtual_election/Voter_Info/VoterInfo.html", async (req, res) => {
+app.post("/Voter_Info/voterinfo.html", async (req, res) => {
   try {
     // const hasVoted = req.session.user.voted;
     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
@@ -533,12 +533,12 @@ app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/virtual_election/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
+app.get("/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
+app.get("/virtual_election/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   // res.set('Content-Type', 'text/css');
   // res.set('Content-Type', 'application/javascript');
@@ -569,7 +569,7 @@ app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async
   }
 });
 
-app.post("/Digilocker_login/Vote/vote.html",checkFaceDetectionDuringVote, async (req, res)=>{
+app.post("/Vote/vote.html",checkFaceDetectionDuringVote, async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     // console.log(req.session);

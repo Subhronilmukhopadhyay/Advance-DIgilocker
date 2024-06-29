@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
           endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
       }
 
-      fetch(endpoint, {
+      fetch('/Voter_Info/VoterInfo.html', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
@@ -33,11 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
           } else if (result.hasVoted == 0) {
               sessionStorage.setItem('userDetails', JSON.stringify(data.user));
               // Conditional redirect based on login type
-              if (loginType === 'Digilocker') {
-                  window.location.href = "/Digilocker_login/Vote/vote.html";
-              } else if (loginType === 'voter') {
-                  window.location.href = "/virtual_election/Vote/vote.html";
-              }
+              // if (loginType === 'Digilocker') {
+              //     window.location.href = "/Digilocker_login/Vote/vote.html";
+              // } else if (loginType === 'voter') {
+              //     window.location.href = "/virtual_election/Vote/vote.html";
+              // }
+              window.location.href = "/Vote/vote.html";
           } else {
               // alert(result.message);
               alert("Failed reCAPTCHA verification or another issue occurred");
