@@ -20,7 +20,6 @@ const port = 3000;
 const saltRounds = 10;
 
 const { Pool } = pg;
-
 const db = new Pool({
   connectionString: process.env.POSTGRES_URL,
 })
