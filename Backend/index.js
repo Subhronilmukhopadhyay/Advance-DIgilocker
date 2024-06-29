@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import path from "path";
 import pg from "pg";
 import bcrypt from "bcryptjs";
+// import bcrypt from "bcrypt";
 import axios from "axios";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
