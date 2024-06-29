@@ -377,7 +377,8 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       req.session.user = {...result2.rows[0]}; 
                       res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '../Voter_Info/voterinfo.html',
+                          redirectUrl: '/Voter_Info/voterinfo.html',
+                          // redirectUrl: '../Voter_Info/voterinfo.html',
                           user: {...result2.rows[0], loginType: 'Digilocker',}
                       });
                   } else {
@@ -436,7 +437,7 @@ app.post('/virtual_election/verify_otp', (req, res) => {
       // console.log(req.session.user);
       // await updateUserLoginStatus(req.session.user.voter_id, 'Voter');
       if (req.session.user && req.session.user.phone === user_phone_number) {
-        res.json({ success: true, user: {...req.session.user}, redirectUrl: '../Voter_Info/voterinfo.html' });
+        res.json({ success: true, user: {...req.session.user}, redirectUrl: '/Voter_Info/voterinfo.html' });
       } else {
         try {
           const logoutResponse = await axios.post('http://localhost:3000/logout');
@@ -454,6 +455,11 @@ app.post('/virtual_election/verify_otp', (req, res) => {
     console.log('Error: ' + err.message);
     res.status(500).json({ success: false, message: 'An error occurred. Please try again.' });
   });
+});
+
+app.get("/Voter_Info/voterinfo.html", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'Voter_Info', 'voterinfo.html'));
 });
 
 app.post("/Voter_Info/voterinfo.html", async (req, res) => {
