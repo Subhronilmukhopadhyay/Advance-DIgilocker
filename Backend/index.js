@@ -70,6 +70,31 @@ app.use(session({
   cookie: { maxAge: 60000 * 5 },
 }));
 
+const cleanupOnServerReload = async () => {
+  // Check if there's an active session to clear
+  if (req.session.user) {
+      try {
+          await clearUserLoginStatus(req.session.user.voter_id);
+          console.log(`Cleared session for user ${req.session.user.voter_id}`);
+      } catch (error) {
+          console.error(`Error clearing session for user ${req.session.user.voter_id}:`, error);
+      }
+  }
+  // Destroy the session
+  req.session.destroy((err) => {
+      if (err) {
+          console.error('Error destroying session:', err);
+          return;
+      }
+      console.log('Session destroyed successfully');
+  });
+};
+
+// Attach cleanup function to process events
+process.on('exit', cleanupOnServerReload);
+process.on('SIGINT', cleanupOnServerReload);
+process.on('SIGTERM', cleanupOnServerReload);
+
 const checkFaceDetection = async (req, res, next) => {
   try {
       
@@ -102,7 +127,6 @@ const checkFaceDetection = async (req, res, next) => {
       res.status(500).send("An unexpected error occurred");
   }
 };
-
 
 const checkAccessCount = async (req, res, next) => {
   try{
@@ -145,15 +169,6 @@ const checkAccessCount = async (req, res, next) => {
         // console.log(`New access count: ${req.session.user.accessCount}`);
         next();
       }
-    // } else {
-    //   await clearUserLoginStatus(req.session.user.voter_id);
-    //   req.session.destroy((err) => {
-    //       if (err) {
-    //           console.error("Error destroying session:", err);
-    //       }
-    //       res.status(403).send("Access is only allowed during the specified slot timings.");
-    //   });
-    // }
   }catch(err){
     await clearUserLoginStatus(req.session.user.voter_id);
     req.session.destroy((e) => {
@@ -162,6 +177,45 @@ const checkAccessCount = async (req, res, next) => {
       }
     });
     console.log(err.message);
+  }
+};
+
+const checkFaceDetectionDuringVote = async (req, res, next) => {
+  try {
+      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, { timeout: 10000 }, async (error, stdout, stderr) => {
+          if (error) {
+              if (error.code === 1 || stdout.includes("No face detected")) {
+                  console.log("No face detected during voting.");
+                  req.faceDetected = false;
+                  next();
+              } else {
+                  console.error(`exec error: ${error}`);
+                  await clearUserLoginStatus(req.session.user.voter_id);
+                  req.session.destroy((e) => {
+                      if (e) {
+                          console.error("Error destroying session:", e);
+                      }
+                  });
+                  return res.status(500).json({ message: "Error executing face detection script" });
+              }
+          } else {
+              if (stdout.includes("Face detected")) {
+                  req.faceDetected = true;
+              } else {
+                  req.faceDetected = false;
+              }
+              next();
+          }
+      });
+  } catch (err) {
+      console.error(`Caught error: ${err}`);
+      await clearUserLoginStatus(req.session.user.voter_id);
+      req.session.destroy((e) => {
+          if (e) {
+              console.error("Error destroying session:", e);
+          }
+      });
+      res.status(500).json({ message: "An unexpected error occurred" });
   }
 };
 
@@ -188,6 +242,47 @@ const updateUserLoginStatus = async (userId, loginType) => {
 
 const clearUserLoginStatus = async (userId) => {
   await db.query("UPDATE login_status SET login_type = NULL WHERE user_id = $1", [userId]);
+};
+
+const runPythonScript = () => {
+  // Define input data (example)
+  const num_constituencies = 3; // Replace with actual number
+  const num_parties = 4; // Replace with actual number
+  const constituencies = ['Const1', 'Const2', 'Const3']; // Replace with actual names
+  const parties = ['PartyA', 'PartyB', 'PartyC', 'PartyD']; // Replace with actual names
+  const votes = {
+      'Const1': { 'PartyA': 100, 'PartyB': 120, 'PartyC': 80, 'PartyD': 90 },
+      'Const2': { 'PartyA': 110, 'PartyB': 90, 'PartyC': 100, 'PartyD': 95 },
+      'Const3': { 'PartyA': 95, 'PartyB': 85, 'PartyC': 110, 'PartyD': 105 }
+  }; // Replace with actual votes
+
+  // Prepare input data to send to Python script
+  const inputData = {
+      num_constituencies,
+      num_parties,
+      constituencies,
+      parties,
+      votes
+  };
+
+  // Construct command to execute Python script
+  const pythonScriptPath = 'path/to/your/python_script.py'; // Replace with actual path
+  const command = `python ${pythonScriptPath} ${JSON.stringify(inputData)}`;
+
+  // Execute Python script
+  exec(command, (error, stdout, stderr) => {
+      if (error) {
+          console.error(`exec error: ${error}`);
+          return;
+      }
+      console.log(`Python script output: ${stdout}`);
+
+      // Parse Python script output (assuming it returns the winning party or coalition)
+      const result = stdout.trim(); // Example: "PartyA forms the government with 2 seats"
+
+      // Handle the result accordingly in your Node.js application
+      console.log(`Result from Python script: ${result}`);
+  });
 };
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
@@ -450,7 +545,7 @@ app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, checkFaceDetection
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.post("/virtual_election/Vote/vote.html", async (req, res)=>{
+app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     if (!req.session.user) {
@@ -462,14 +557,18 @@ app.post("/virtual_election/Vote/vote.html", async (req, res)=>{
     const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
-    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
-    res.json({message: 'Your vote has been submitted successfully!'});
+    if (req.faceDetected) {
+      await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]);
+      res.json({ message: 'Your vote has been submitted successfully!' });
+    } else {
+      res.json({ message: 'Your vote has been submitted but no face was detected.' });
+    }
   }catch(err){
     console.log(err.message);
   }
 });
 
-app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
+app.post("/Digilocker_login/Vote/vote.html",checkFaceDetectionDuringVote, async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     // console.log(req.session);
@@ -482,8 +581,12 @@ app.post("/Digilocker_login/Vote/vote.html", async (req, res)=>{
     const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
-    await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1",[req.body.party]);
-    res.json({message: 'Your vote has been submitted successfully!'});
+    if (req.faceDetected) {
+      await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]);
+      res.json({ message: 'Your vote has been submitted successfully!' });
+    } else {
+      res.json({ message: 'Your vote has been submitted but no face was detected.' });
+    }
   }catch(err){
     console.log(err.message);
   }
