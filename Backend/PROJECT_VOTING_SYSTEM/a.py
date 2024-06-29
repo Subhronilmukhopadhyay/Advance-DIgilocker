@@ -31,7 +31,7 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     resized = cv2.resize(image, dim, interpolation=inter)
     return resized
 
-fd = FaceDetector(r'C:\College learnings\Development\Digilocker_project\Backend\PROJECT_VOTING_SYSTEM\Required_Models_(2_7)\haarcascade_frontalface_default.xml')
+fd = FaceDetector('\\Required_Models_(2_7)\\haarcascade_frontalface_default.xml')
 webcam = cv2.VideoCapture(0)
 
 start_time = time.time()

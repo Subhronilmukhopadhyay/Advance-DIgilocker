@@ -182,7 +182,7 @@ const checkAccessCount = async (req, res, next) => {
 
 const checkFaceDetectionDuringVote = async (req, res, next) => {
   try {
-      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, { timeout: 10000 }, async (error, stdout, stderr) => {
+      exec(`python \\PROJECT_VOTING_SYSTEM\\a.py`, { timeout: 10000 }, async (error, stdout, stderr) => {
           if (error) {
               if (error.code === 1 || stdout.includes("No face detected")) {
                   console.log("No face detected during voting.");
