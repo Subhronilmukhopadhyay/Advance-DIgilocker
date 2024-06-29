@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
               logout();
               window.location.href = "/";
           } else if (result.hasVoted == 0) {
+              alert(result.message);
               sessionStorage.setItem('userDetails', JSON.stringify(data.user));
               // Conditional redirect based on login type
               // if (loginType === 'Digilocker') {
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // } else if (loginType === 'voter') {
               //     window.location.href = "/virtual_election/Vote/vote.html";
               // }
-              window.location.href = "/Vote/vote.html";
+              window.location.href = result.redirectUrl;
           } else {
               // alert(result.message);
               alert("Failed reCAPTCHA verification or another issue occurred");

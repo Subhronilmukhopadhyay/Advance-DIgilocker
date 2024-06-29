@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return; 
     }
 
-    startVideoProcessing();
+    // startVideoProcessing();
 
     // if (sessionStorage.getItem('logoutInProgress') === 'true') {
     //     sessionStorage.removeItem('logoutInProgress');
@@ -74,7 +74,7 @@ function submitVote(event) {
             endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
         }
 
-        fetch('/Vote/vote.html', {
+        fetch('/vote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

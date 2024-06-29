@@ -324,7 +324,7 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
             req.session.user = result.rows[0]; 
             res.json({ 
               message: 'Form has been submitted!',
-              redirectUrl: '/Voter_Info/VoterInfo.html',
+              redirectUrl: '/Voter_Info/voterinfo.html',
               user: result.rows[0]
             });
           }
@@ -437,7 +437,7 @@ app.post('/virtual_election/verify_otp', (req, res) => {
       // console.log(req.session.user);
       // await updateUserLoginStatus(req.session.user.voter_id, 'Voter');
       if (req.session.user && req.session.user.phone === user_phone_number) {
-        res.json({ success: true, user: {...req.session.user}, redirectUrl: '/Voter_Info/voterInfo.html' });
+        res.json({ success: true, user: {...req.session.user}, redirectUrl: '../Voter_Info/voterinfo.html' });
       } else {
         try {
           const logoutResponse = await axios.post('http://localhost:3000/logout');
@@ -462,7 +462,7 @@ app.get("/Voter_Info/voterInfo.html", (req, res) => {
   res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
 });
 
-app.post("/Voter_Info/voterInfo.html", async (req, res) => {
+app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   try {
     // const hasVoted = req.session.user.voted;
     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
@@ -482,14 +482,15 @@ app.post("/Voter_Info/voterInfo.html", async (req, res) => {
     if (response.data.success) {
       // Continue with the rest of your logic
       // console.log(req.session.user);
-      const hasVoted = req.session.user.voted;
-      const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+      const voter_id = req.session.user.voter_id;
+      const result = await db.query("SELECT voted FROM voters_details WHERE voter_id = $1", [voter_id]);
+      const hasVoted = result.rows[0].voted;
       // console.log(hasVoted);
-      if (result.rows.length > 0) {
-        return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+      if (hasVoted==1) {
+        return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted, redirectUrl: '/' });
       }
       else{
-        return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
+        return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user, redirectUrl: '/vote'});
       }
     } else {
       return res.status(400).json({ message: "Failed reCAPTCHA verification" });
@@ -501,57 +502,101 @@ app.post("/Voter_Info/voterInfo.html", async (req, res) => {
   }
 });
 
-app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
-  try {
-    // const hasVoted = req.session.user.voted;
-    // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-    // if (result.rows.length > 0) {
-    //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
-    // }
-    // console.log(req.body);
-    const recaptchaResponse = req.body["g-recaptcha-response"];
-    if (!recaptchaResponse) {
-      return res.status(400).json({ message: "reCAPTCHA is required" });
-    }
+// app.post("/virtual_election/Voter_Info/VoterInfo.html", async (req, res) => {
+//   try {
+//     // const hasVoted = req.session.user.voted;
+//     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+//     // if (result.rows.length > 0) {
+//     //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+//     // }
+//     // console.log(req.body);
+//     const recaptchaResponse = req.body["g-recaptcha-response"];
+//     if (!recaptchaResponse) {
+//       return res.status(400).json({ message: "reCAPTCHA is required" });
+//     }
 
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
+//     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+//     const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
 
-    const response = await axios.post(verificationUrl);
-    if (response.data.success) {
-      // Continue with the rest of your logic
-      // console.log(req.session.user);
-      const hasVoted = req.session.user.voted;
-      const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
-      // console.log(hasVoted);
-      if (result.rows.length > 0) {
-        return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
-      }
-      else{
-        return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
-      }
-    } else {
-      return res.status(400).json({ message: "Failed reCAPTCHA verification" });
-    }
+//     const response = await axios.post(verificationUrl);
+//     if (response.data.success) {
+//       // Continue with the rest of your logic
+//       // console.log(req.session.user);
+//       const hasVoted = req.session.user.voted;
+//       const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+//       // console.log(hasVoted);
+//       if (result.rows.length > 0) {
+//         return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+//       }
+//       else{
+//         return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
+//       }
+//     } else {
+//       return res.status(400).json({ message: "Failed reCAPTCHA verification" });
+//     }
 
-  } catch (err) {
-    return res.json({ message: "user's voterID not found or Something went wrong" });
-  }
-});
+//   } catch (err) {
+    
+//     return res.json({ message: "user's voterID not found or Something went wrong" });
+//   }
+// });
 
-app.get("/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
+// app.post("/Digilocker_login/Voter_Info/VoterInfo.html", async (req, res) => {
+//   try {
+//     // const hasVoted = req.session.user.voted;
+//     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+//     // if (result.rows.length > 0) {
+//     //   return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+//     // }
+//     // console.log(req.body);
+//     const recaptchaResponse = req.body["g-recaptcha-response"];
+//     if (!recaptchaResponse) {
+//       return res.status(400).json({ message: "reCAPTCHA is required" });
+//     }
+
+//     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+//     const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
+
+//     const response = await axios.post(verificationUrl);
+//     if (response.data.success) {
+//       // Continue with the rest of your logic
+//       // console.log(req.session.user);
+//       const hasVoted = req.session.user.voted;
+//       const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
+//       // console.log(hasVoted);
+//       if (result.rows.length > 0) {
+//         return res.send({ message: "User has already voted, Cannot vote more than Once", hasVoted: hasVoted });
+//       }
+//       else{
+//         return res.json({ message: "Vote now", hasVoted: hasVoted, user: req.session.user});
+//       }
+//     } else {
+//       return res.status(400).json({ message: "Failed reCAPTCHA verification" });
+//     }
+
+//   } catch (err) {
+//     return res.json({ message: "user's voterID not found or Something went wrong" });
+//   }
+// });
+
+app.get("/vote", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.get("/virtual_election/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
-  // console.log(req.session);
-  // res.set('Content-Type', 'text/css');
-  // res.set('Content-Type', 'application/javascript');
-  res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
-});
+// app.get("/virtual_election/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
+//   // console.log(req.session);
+//   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
+// });
 
-app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async (req, res)=>{
+// app.get("/Digilocker_login/Vote/vote.html", checkAccessCount, checkFaceDetection, (req, res) => {
+//   // console.log(req.session);
+//   // res.set('Content-Type', 'text/css');
+//   // res.set('Content-Type', 'application/javascript');
+//   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
+// });
+
+app.post("/vote", checkFaceDetectionDuringVote, async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     if (!req.session.user) {
@@ -575,30 +620,54 @@ app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async
   }
 });
 
-app.post("/Vote/vote.html",checkFaceDetectionDuringVote, async (req, res)=>{
-  try{
-    // console.log('Received form data:', req.body);
-    // console.log(req.session);
-    if (!req.session.user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
-    // console.log(result.rows[0]);
-    const hasVoted = req.session.user.voted;
-    const voterId = req.session.user.voter_id;
-    // console.log(hasVoted);
-    await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
-    if (req.faceDetected) {
-      await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
-      // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
-      res.json({ message: 'Your vote has been submitted successfully!' });
-    } else {
-      res.json({ message: 'Your vote has been submitted but no face was detected.' });
-    }
-  }catch(err){
-    console.log(err.message);
-  }
-});
+// app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async (req, res)=>{
+//   try{
+//     // console.log('Received form data:', req.body);
+//     if (!req.session.user) {
+//       return res.status(401).json({ message: 'Unauthorized' });
+//     }
+//     // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
+//     // console.log(result.rows[0]);
+//     const hasVoted = req.session.user.voted;
+//     const voterId = req.session.user.voter_id;
+//     // console.log(hasVoted);
+//     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
+//     if (req.faceDetected) {
+//       await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
+//       // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
+//       res.json({ message: 'Your vote has been submitted successfully!' });
+//     } else {
+//       res.json({ message: 'Your vote has been submitted but no face was detected.' });
+//     }
+//   }catch(err){
+//     console.log(err.message);
+//   }
+// });
+
+// app.post("/Digilocker_login/Vote/vote.html",checkFaceDetectionDuringVote, async (req, res)=>{
+//   try{
+//     // console.log('Received form data:', req.body);
+//     // console.log(req.session);
+//     if (!req.session.user) {
+//       return res.status(401).json({ message: 'Unauthorized' });
+//     }
+//     // const result = await db2.query("SELECT * FROM parties WHERE party_name = $1",[req.body.party]);
+//     // console.log(result.rows[0]);
+//     const hasVoted = req.session.user.voted;
+//     const voterId = req.session.user.voter_id;
+//     // console.log(hasVoted);
+//     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
+//     if (req.faceDetected) {
+//       await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
+//       // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
+//       res.json({ message: 'Your vote has been submitted successfully!' });
+//     } else {
+//       res.json({ message: 'Your vote has been submitted but no face was detected.' });
+//     }
+//   }catch(err){
+//     console.log(err.message);
+//   }
+// });
 
 app.post('/logout', async (req, res) => {
   // const accesscount = req.session.accesscount;
