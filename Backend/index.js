@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 env.config();
 
 const app = express();
-const port = 5000;
+const port = 3000;
 const saltRounds = 10;
 
 const { Pool } = pg;
@@ -324,7 +324,7 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
             req.session.user = result.rows[0]; 
             res.json({ 
               message: 'Form has been submitted!',
-              redirectUrl: '/Voter_Info/voterinfo.html',
+              redirectUrl: '/Voter_Info/VoterInfo.html',
               user: result.rows[0]
             });
           }
@@ -377,7 +377,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       req.session.user = {...result2.rows[0]}; 
                       res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '/Voter_Info/voterInfo.html',
+                          redirectUrl: '/Voter_Info/VoterInfo.html',
                           // redirectUrl: '../Voter_Info/voterInfo.html',
                           user: {...result2.rows[0], loginType: 'Digilocker',}
                       });
