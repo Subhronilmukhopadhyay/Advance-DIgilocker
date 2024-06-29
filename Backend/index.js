@@ -19,22 +19,22 @@ const app = express();
 const port = 3000;
 const saltRounds = 10;
 
-// const { Pool } = pg;
+const { Pool } = pg;
 
-// const db = new Pool({
-//   connectionString: process.env.POSTGRES_URL,
-// })
-// db.connect()
-// .then(() => console.log('Connected to', process.env.PG_DATABASE))
-// .catch(err => console.error('Connection error', err.stack));
+const db = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+})
+db.connect()
+.then(() => console.log('Connected to', process.env.PG_DATABASE))
+.catch(err => console.error('Connection error', err.stack));
 
-const db = new pg.Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE1,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
-});
+// const db = new pg.Client({
+//   user: process.env.PG_USER,
+//   host: process.env.PG_HOST,
+//   database: process.env.PG_DATABASE1,
+//   password: process.env.PG_PASSWORD,
+//   port: process.env.PG_PORT,
+// });
 db.connect()
   .then(() => console.log('Connected to', process.env.PG_DATABASE1))
   .catch(err => console.error('Connection error', err.stack));
@@ -266,7 +266,7 @@ const runPythonScript = () => {
   };
 
   // Construct command to execute Python script
-  const pythonScriptPath = 'path/to/your/python_script.py'; // Replace with actual path
+  const pythonScriptPath = 'PROJECT_VOTING_SYSTEM\\a.py'; // Replace with actual path
   const command = `python ${pythonScriptPath} ${JSON.stringify(inputData)}`;
 
   // Execute Python script
@@ -558,7 +558,8 @@ app.post("/virtual_election/Vote/vote.html", checkFaceDetectionDuringVote, async
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
     if (req.faceDetected) {
-      await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]);
+      await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
+      // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
       res.json({ message: 'Your vote has been submitted successfully!' });
     } else {
       res.json({ message: 'Your vote has been submitted but no face was detected.' });
@@ -582,7 +583,8 @@ app.post("/Digilocker_login/Vote/vote.html",checkFaceDetectionDuringVote, async 
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
     if (req.faceDetected) {
-      await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]);
+      await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
+      // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
       res.json({ message: 'Your vote has been submitted successfully!' });
     } else {
       res.json({ message: 'Your vote has been submitted but no face was detected.' });
