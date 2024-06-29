@@ -1,6 +1,6 @@
-node_modules/
-package-lock.json
-package.json
+# node_modules/
+# package-lock.json
+# package.json
 .env
 PROJECT_VOTING_SYSTEM/Face_detection.ipynb
 PROJECT_VOTING_SYSTEM/faceMonitor.py
