@@ -103,8 +103,8 @@ process.on('SIGTERM', cleanupOnServerReload);
 
 const checkFaceDetection = async (req, res, next) => {
   try {
-      // const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
-      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, async (error, stdout, stderr) => {
+      const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
+      exec(`python ${scriptPath}`, async (error, stdout, stderr) => {
           if (error) {
               console.error(`exec error: ${error}`);
               await clearUserLoginStatus(req.session.user.voter_id);
@@ -188,8 +188,8 @@ const checkAccessCount = async (req, res, next) => {
 
 const checkFaceDetectionDuringVote = async (req, res, next) => {
   try {
-      // const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
-      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, { timeout: 10000 }, async (error, stdout, stderr) => {
+      const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
+      exec(`python ${scriptPath}`, { timeout: 10000 }, async (error, stdout, stderr) => {
           if (error) {
               if (error.code === 1 || stdout.includes("No face detected")) {
                   console.log("No face detected during voting.");
