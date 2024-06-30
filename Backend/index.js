@@ -509,12 +509,12 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetection, (req, res) => {
+app.get("/vote", checkAccessCount, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.post("/vote", checkFaceDetectionDuringVote, async (req, res)=>{
+app.post("/vote", async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     if (!req.session.user) {
@@ -526,13 +526,13 @@ app.post("/vote", checkFaceDetectionDuringVote, async (req, res)=>{
     const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
-    if (req.faceDetected) {
+    // if (req.faceDetected) {
       await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
       // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
       res.json({ message: 'Your vote has been submitted successfully!' });
-    } else {
-      res.json({ message: 'Your vote has been submitted but no face was detected.' });
-    }
+    // } else {
+    //   res.json({ message: 'Your vote has been submitted but no face was detected.' });
+    // }
   }catch(err){
     console.log(err.message);
   }
