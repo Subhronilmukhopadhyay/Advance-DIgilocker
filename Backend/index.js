@@ -70,24 +70,30 @@ app.use(session({
   cookie: { maxAge: 60000 * 5 },
 }));
 
-const cleanupOnServerReload = async () => {
+const cleanupOnServerReload = async (req) => {
   // Check if there's an active session to clear
-  if (req.session.user) {
-      try {
-          await clearUserLoginStatus(req.session.user.voter_id);
-          console.log(`Cleared session for user ${req.session.user.voter_id}`);
-      } catch (error) {
-          console.error(`Error clearing session for user ${req.session.user.voter_id}:`, error);
-      }
+  try{
+    if (req.session.user) {
+        try {
+            await clearUserLoginStatus(req.session.user.voter_id);
+            console.log(`Cleared session for user ${req.session.user.voter_id}`);
+        } catch (error) {
+            console.error(`Error clearing session for user ${req.session.user.voter_id}:`, error);
+        }
+    }
+    // Destroy the session
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return;
+        }
+        console.log('Session destroyed successfully');
+    });
   }
-  // Destroy the session
-  req.session.destroy((err) => {
-      if (err) {
-          console.error('Error destroying session:', err);
-          return;
-      }
-      console.log('Session destroyed successfully');
-  });
+  catch(err){
+    console.log(err.message);
+    return;
+  }
 };
 
 // Attach cleanup function to process events
