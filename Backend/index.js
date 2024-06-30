@@ -97,8 +97,8 @@ process.on('SIGTERM', cleanupOnServerReload);
 
 const checkFaceDetection = async (req, res, next) => {
   try {
-      
-      exec(`python PROJECT_VOTING_SYSTEM\\a.py`, async (error, stdout, stderr) => {
+      const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
+      exec(`python ${scriptPath}`, async (error, stdout, stderr) => {
           if (error) {
               console.error(`exec error: ${error}`);
               await clearUserLoginStatus(req.session.user.voter_id);
