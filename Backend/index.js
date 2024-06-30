@@ -70,7 +70,7 @@ app.use(session({
   cookie: { maxAge: 60000 * 5 },
 }));
 
-const cleanupOnServerReload = async () => {
+const cleanupOnServerReload = async (req) => {
   // Check if there's an active session to clear
   if (req.session.user) {
       try {
