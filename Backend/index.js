@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 env.config();
 
 const app = express();
-const port = 8000;
+const port = 3000;
 const saltRounds = 10;
 
 const { Pool } = pg;
@@ -143,18 +143,18 @@ const checkAccessCount = async (req, res, next) => {
     // console.log(`Current access count: ${req.session.user.accessCount}`);
 
     const {start_date, start_time, end_time } = result.rows[0];
-    const startDateWithoutTime = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
+    const startDateWithoutTime = start_date.toISOString().split('T')[0];
     // const truncatedDate = result.rows[0].start_date.split('T')[0];
     console.log(startDateWithoutTime);
 
     const currentDate = new Date();
     // console.log(currentDate);
-    console.log(start_date);
+    // console.log(start_date)
     // console.log(start_time);
     // console.log(end_time);
-    const slotStartDate = new Date(`${start_date}T${start_time}`);
+    // const slotStartDate = new Date(`${startDateWithoutTime}T${start_time}`);
     // console.log(slotStartDate);
-    const slotEndDate = new Date(`${start_date}T${end_time}`);
+    // const slotEndDate = new Date(`${startDateWithoutTime}T${end_time}`);
     // console.log(slotEndDate);
 
     // if (currentDate >= slotStartDate && currentDate <= slotEndDate) {
@@ -176,12 +176,14 @@ const checkAccessCount = async (req, res, next) => {
         next();
       }
   }catch(err){
-    await clearUserLoginStatus(req.session.user.voter_id);
-    req.session.destroy((e) => {
-      if (e) {
-          console.error("Error destroying session:", e);
-      }
-    });
+    if(req.session){
+      await clearUserLoginStatus(req.session.user.voter_id);
+      req.session.destroy((e) => {
+        if (e) {
+            console.error("Error destroying session:", e);
+        }
+      });
+    }
     console.log(err.message);
   }
 };
@@ -291,6 +293,62 @@ const runPythonScript = () => {
       console.log(`Result from Python script: ${result}`);
   });
 };
+
+const checkFaceDetection2 = async (req, res, next) => {
+  if (!req.session.faceDetected) {
+    const result = await db.query("SELECT accesscount FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
+    let accessCount = result.rows[0].accesscount;
+    // console.log(accessCount);
+    await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount-1]);
+    return res.redirect('/face-detection');
+  }
+  next();
+}
+
+app.get('/face-detection', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'Face-Detection-JavaScript' ,'index2.html'));
+});
+
+app.get('/face-detection-success', (req, res) => {
+  req.session.faceDetected = true;
+  res.redirect('/vote');
+});
+
+app.get('/face-detection-failed', async (req, res) => {
+  req.session.faceDetected = false;
+  await clearUserLoginStatus(req.session.user.voter_id);
+  req.session.destroy((e) => {
+      if (e) {
+          console.error("Error destroying session:", e);
+      }
+  });
+  res.redirect('/');
+});
+
+function checkFaceDetectionDuringVote2(req, res, next) {
+  if (!req.session.faceDetectionStatus) {
+    req.session.faceDetectionStatus = { detected: false };
+  }
+  req.faceDetected = req.session.faceDetectionStatus.detected;
+  next();
+}
+
+// Route to serve the face monitor page
+app.get('/face-monitor', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'Face-Detection-JavaScript' ,'index.html'));
+});
+
+// Route to handle face detection status updates
+app.post('/face-detection-status', (req, res) => {
+  req.session.faceDetectionStatus = { detected: req.body.faceDetected };
+  if(req.body.faceDetected == true){
+    res.redirect('/vote');
+  }
+  else{
+    res.redirect('/vote');
+  }
+});
+
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const fullName = req.body.fullName;
@@ -509,12 +567,12 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetection, (req, res) => {
+app.get("/vote", checkAccessCount, checkFaceDetection2, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.post("/vote", checkFaceDetectionDuringVote, async (req, res)=>{
+app.post("/vote", checkFaceDetectionDuringVote2, async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     if (!req.session.user) {
@@ -554,6 +612,6 @@ app.post('/logout', async (req, res) => {
   });
 });
 
-app.listen(port, () => {
+app.listen(port || 8000, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
