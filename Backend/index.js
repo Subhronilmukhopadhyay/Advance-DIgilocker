@@ -149,7 +149,6 @@ const checkAccessCount = async (req, res, next) => {
 
     const currentDate = new Date();
     // console.log(currentDate);
-    // console.log(start_date)
     // console.log(start_time);
     // console.log(end_time);
     // const slotStartDate = new Date(`${startDateWithoutTime}T${start_time}`);
