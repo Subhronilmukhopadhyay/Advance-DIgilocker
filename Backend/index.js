@@ -582,7 +582,7 @@ app.get("/vote", checkAccessCount, checkFaceDetection2, (req, res) => {
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
 
-app.post("/vote", checkFaceDetectionDuringVote2, async (req, res)=>{
+app.post("/vote", async (req, res)=>{
   try{
     // console.log('Received form data:', req.body);
     if (!req.session.user) {
