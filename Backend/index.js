@@ -35,7 +35,7 @@ db.connect()
 
   db.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err);
-    process.exit(-1); 
+    res.redirect('/'); 
   });
 
 // const db = new pg.Client({
