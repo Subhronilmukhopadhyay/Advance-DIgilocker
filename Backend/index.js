@@ -25,8 +25,18 @@ const db = new Pool({
   connectionString: process.env.POSTGRES_URL,
 })
 db.connect()
-.then(() => console.log('Connected to', process.env.PG_DATABASE))
-.catch(err => console.error('Connection error', err.stack));
+  .then(client => {
+    console.log('Connected to', process.env.PG_DATABASE);
+    client.release();
+  })
+  .catch(err => {
+    console.error('Connection error', err.stack);
+  });
+
+  db.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err);
+    process.exit(-1); 
+  });
 
 // const db = new pg.Client({
 //   user: process.env.PG_USER,
@@ -175,7 +185,7 @@ const checkAccessCount = async (req, res, next) => {
         next();
       }
   }catch(err){
-    if(req.session){
+    if(req.session.user){
       await clearUserLoginStatus(req.session.user.voter_id);
       req.session.destroy((e) => {
         if (e) {
@@ -305,7 +315,8 @@ const checkFaceDetection2 = async (req, res, next) => {
 }
 
 app.get('/face-detection', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'Face-Detection-JavaScript' ,'index2.html'));
+  // res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
+  res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' ,'index2.html'));
 });
 
 app.get('/face-detection-success', (req, res) => {
@@ -324,11 +335,11 @@ app.get('/face-detection-failed', async (req, res) => {
   res.redirect('/');
 });
 
-function checkFaceDetectionDuringVote2(req, res, next) {
-  if (!req.session.faceDetectionStatus) {
-    req.session.faceDetectionStatus = { detected: false };
+async function checkFaceDetectionDuringVote2(req, res, next) {
+  if (!req.session || req.session.faceDetected === undefined) {
+    return res.status(401).json({ message: 'Face detection status not found in session.' });
   }
-  req.faceDetected = req.session.faceDetectionStatus.detected;
+  req.faceDetected = req.session.faceDetected;
   next();
 }
 
@@ -583,13 +594,13 @@ app.post("/vote", checkFaceDetectionDuringVote2, async (req, res)=>{
     const voterId = req.session.user.voter_id;
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
-    // if (req.faceDetected) {
+    if (req.faceDetected) {
       await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
       // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
       res.json({ message: 'Your vote has been submitted successfully!' });
-    // } else {
-    //   res.json({ message: 'Your vote has been submitted but no face was detected.' });
-    // }
+    } else {
+      res.json({ message: 'Your vote has been submitted but no face was detected.' });
+    }
   }catch(err){
     console.log(err.message);
   }
