@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return; 
     }
 
-    const faceMonitorWindow = window.open('/face-monitor', 'Face Monitor', 'width=320,height=240');
+    // const faceMonitorWindow = window.open('/face-monitor', 'Face Monitor', 'width=320,height=240');
 
     // startVideoProcessing();
 
