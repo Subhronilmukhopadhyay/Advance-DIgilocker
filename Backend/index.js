@@ -11,6 +11,7 @@ import session from "express-session";
 import env from "dotenv";
 import https from "https";
 import { exec } from "child_process";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,6 +80,9 @@ app.use(session({
   saveUninitialized: true,
   cookie: { maxAge: 60000 * 5 },
 }));
+
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 const cleanupOnServerReload = async (req) => {
   // Check if there's an active session to clear
@@ -316,6 +320,74 @@ const checkFaceDetection2 = async (req, res, next) => {
   }
   next();
 }
+
+app.get('/face-scan', (req, res) => {
+  // Assume face-scan.html is in the same directory as this file.
+  res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' , 'trial.html'));
+});
+
+// Route: Receive image from face scan page and run Python face detection
+app.post("/detect-face", (req, res) => {
+  // Remove the data URL prefix
+  const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
+  const uploadsDir = path.join(__dirname, "uploads");
+
+  // Ensure the uploads directory exists
+  fs.mkdir(uploadsDir, { recursive: true }, (err) => {
+    if (err) {
+      console.error("Error creating uploads directory:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    const filePath = path.join(uploadsDir, "capture.jpg");
+    fs.writeFile(filePath, base64Data, "base64", (err) => {
+      if (err) {
+        console.error("Error saving image:", err);
+        return res.status(500).json({ message: "Error saving image" });
+      }
+
+      const pythonScriptPath = path.join(
+        __dirname,
+        "PROJECT_VOTING_SYSTEM",
+        "d.py"
+      );
+
+      // Execute the Python script with the image file as an argument
+      exec(
+        `python -u "${pythonScriptPath}" "${filePath}"`,
+        { timeout: 10000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error("Python script error:", error);
+            req.session.faceDetected = false;
+            return res
+              .status(500)
+              .json({ message: "Error executing face detection script" });
+          }
+          console.log("Python script output:", stdout);
+
+          if (stdout.includes("Face detected")) {
+            req.session.faceDetected = true;
+            return res.json({ message: "Face detected" });
+          } else {
+            req.session.faceDetected = false;
+            return res.status(200).json({ message: "No face detected" });
+          }
+        }
+      );
+    });
+  });
+});
+
+const checkFaceDetection3 = (req, res, next) => {
+  // If the session flag is set, then proceed.
+  if (req.session.faceDetected) {
+    next();
+  } else {
+    // Redirect to the face scan page if not detected.
+    res.redirect('/face-scan');
+  }
+};
 
 app.get('/face-detection', (req, res) => {
   // res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
@@ -592,7 +664,7 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetection2, (req, res) => {
+app.get("/vote", checkAccessCount, checkFaceDetection3, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });

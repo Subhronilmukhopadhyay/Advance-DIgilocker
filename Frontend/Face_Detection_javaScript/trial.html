@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Face Scan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #videoFeed {
+      width: 640px;
+      max-width: 100%;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    #captureButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #captureButton:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Face Detection Scan</h1>
+  <video id="videoFeed" autoplay playsinline></video>
+  <br>
+  <button id="captureButton">Capture Face</button>
+  <div id="message"></div>
+  <!-- Hidden canvas to capture video frame -->
+  <canvas id="snapshotCanvas" style="display: none;"></canvas>
+
+  <script>
+    const video = document.getElementById('videoFeed');
+    const canvas = document.getElementById('snapshotCanvas');
+    const captureButton = document.getElementById('captureButton');
+    const messageDiv = document.getElementById('message');
+
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        messageDiv.textContent = "Error accessing camera. Please check your device settings.";
+      }
+    }
+
+    // Capture image from video and compress to JPEG
+    function captureImage() {
+      const context = canvas.getContext('2d');
+      // Optionally reduce resolution (e.g., 640x480 or lower)
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      canvas.width = width;
+      canvas.height = height;
+      context.drawImage(video, 0, 0, width, height);
+      // Convert to JPEG with quality 0.7 (adjust quality as needed)
+      return canvas.toDataURL('image/jpeg', 0.7);
+    }
+
+    async function sendImageForDetection(imageData) {
+      try {
+        const response = await fetch('/detect-face', {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: imageData })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          messageDiv.textContent = data.message;
+          if (data.message.includes("Face detected")) {
+            setTimeout(() => {
+              window.location.href = "/vote";
+            }, 1500);
+          }
+        } else {
+          messageDiv.textContent = "Error: " + data.message;
+        }
+      } catch (err) {
+        console.error("Error sending image:", err);
+        messageDiv.textContent = "Error sending image for detection.";
+      }
+    }
+
+    captureButton.addEventListener("click", () => {
+      captureButton.disabled = true;
+      messageDiv.textContent = "Processing...";
+      const imageData = captureImage();
+      sendImageForDetection(imageData).finally(() => {
+        captureButton.disabled = false;
+      });
+    });
+
+    window.addEventListener("DOMContentLoaded", initCamera);
+  </script>
+</body>
+</html>
