@@ -199,13 +199,14 @@ const checkAccessCount = async (req, res, next) => {
 
 const checkFaceDetectionDuringVote = async (req, res, next) => {
   try {
-      const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
+      const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py';
       exec(`python ${scriptPath}`, { timeout: 10000 }, async (error, stdout, stderr) => {
           if (error) {
               if (error.code === 1 || stdout.includes("No face detected")) {
                   console.log("No face detected during voting.");
                   req.faceDetected = false;
-                  next();
+                  return res.status(500).json({ message: "Error executing face detection script" });
+                  // res.redirect('/');
               } else {
                   console.error(`exec error: ${error}`);
                   await clearUserLoginStatus(req.session.user.voter_id);
@@ -607,6 +608,7 @@ app.post("/vote", async (req, res)=>{
     // console.log(hasVoted);
     await db.query("UPDATE voters_details SET voted = voted + 1 WHERE voter_id = $1", [voterId]);
     // if (req.faceDetected) {
+      // console.log(req.body.party);
       await db.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using vercel database
       // await db2.query("UPDATE parties SET count = count + 1 WHERE party_name = $1", [req.body.party]); // if using local database
       res.json({ message: 'Your vote has been submitted successfully!' });

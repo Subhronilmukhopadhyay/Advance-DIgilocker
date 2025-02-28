@@ -36,16 +36,17 @@ current_directory = os.path.dirname(__file__)
 xml_file_path = os.path.join(current_directory, 'Required_Models_(2_7)', 'haarcascade_frontalface_default.xml')
 fd = FaceDetector(xml_file_path)
 
-for i in range(5):
-    cap = cv2.VideoCapture(i)
-    if cap.isOpened():
-        print(f"Camera index {i} is available.")
-        cap.release()
-    else:
-        print(f"Camera index {i} is not available.")
+# for i in range(5):
+#     cap = cv2.VideoCapture(i)
+#     if cap.isOpened():
+#         print(f"Camera index {i} is available.")
+#         cap.release()
+#     else:
+#         print(f"Camera index {i} is not available.")
 
 start_time = time.time()
 
+webcam = cv2.VideoCapture(0)
 while True:
     (grabbed, frame) = webcam.read()
     frame = resize(frame, width=500)
