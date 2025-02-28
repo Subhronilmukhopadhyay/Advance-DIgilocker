@@ -115,39 +115,6 @@ process.on('exit', cleanupOnServerReload);
 process.on('SIGINT', cleanupOnServerReload);
 process.on('SIGTERM', cleanupOnServerReload);
 
-const checkFaceDetection = async (req, res, next) => {
-  try {
-      const scriptPath = path.resolve(__dirname, 'PROJECT_VOTING_SYSTEM/a.py');
-      exec(`python ${scriptPath}`, async (error, stdout, stderr) => {
-          if (error) {
-              console.error(`exec error: ${error}`);
-              await clearUserLoginStatus(req.session.user.voter_id);
-              req.session.destroy((e) => {
-                if (e) {
-                    console.error("Error destroying session:", e);
-                }
-              });
-              return res.status(500).send("Error executing face detection script");
-          }
-
-          if (stdout.includes("Face detected")) {
-              next();
-          } else {
-              await clearUserLoginStatus(req.session.user.voter_id);
-              req.session.destroy((e) => {
-                if (e) {
-                    console.error("Error destroying session:", e);
-                }
-              });
-              res.status(403).send("Face not detected. Access denied.");
-          }
-      });
-  } catch (err) {
-      console.error(`Caught error: ${err}`);
-      res.status(500).send("An unexpected error occurred");
-  }
-};
-
 const checkAccessCount = async (req, res, next) => {
   try{
     // console.log(req.session);
@@ -201,49 +168,6 @@ const checkAccessCount = async (req, res, next) => {
   }
 };
 
-const checkFaceDetectionDuringVote = async (req, res, next) => {
-  try {
-      // const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py'; //for local use
-      const scriptPath = path.join(__dirname, 'PROJECT_VOTING_SYSTEM', 'a.py'); //deploy (in future possible)
-      exec(`python -u ${scriptPath}`, { timeout: 10000 }, async (error, stdout, stderr) => {
-          console.log('Python stdout:', stdout);
-          if (error) {
-              if (error.code === 1 || stdout.includes("No face detected")) {
-                  console.log("No face detected during voting.");
-                  req.faceDetected = false;
-                  return res.status(500).json({ message: "Error executing face detection script" });
-                  // res.redirect('/');
-              } else {
-                  console.error(`exec error: ${error}`);
-                  await clearUserLoginStatus(req.session.user.voter_id);
-                  req.session.destroy((e) => {
-                      if (e) {
-                          console.error("Error destroying session:", e);
-                      }
-                  });
-                  return res.status(500).json({ message: "Error executing face detection script" });
-              }
-          } else {
-              if (stdout.includes("Face detected")) {
-                  req.faceDetected = true;
-              } else {
-                  req.faceDetected = false;
-              }
-              next();
-          }
-      });
-  } catch (err) {
-      console.error(`Caught error: ${err}`);
-      await clearUserLoginStatus(req.session.user.voter_id);
-      req.session.destroy((e) => {
-          if (e) {
-              console.error("Error destroying session:", e);
-          }
-      });
-      res.status(500).json({ message: "An unexpected error occurred" });
-  }
-};
-
 const checkUserLoginStatus = async (userId) => {
   try {
     // console.log(userId);
@@ -269,61 +193,9 @@ const clearUserLoginStatus = async (userId) => {
   await db.query("UPDATE login_status SET login_type = NULL WHERE user_id = $1", [userId]);
 };
 
-const runPythonScript = () => {
-  // Define input data (example)
-  const num_constituencies = 3; // Replace with actual number
-  const num_parties = 4; // Replace with actual number
-  const constituencies = ['Const1', 'Const2', 'Const3']; // Replace with actual names
-  const parties = ['PartyA', 'PartyB', 'PartyC', 'PartyD']; // Replace with actual names
-  const votes = {
-      'Const1': { 'PartyA': 100, 'PartyB': 120, 'PartyC': 80, 'PartyD': 90 },
-      'Const2': { 'PartyA': 110, 'PartyB': 90, 'PartyC': 100, 'PartyD': 95 },
-      'Const3': { 'PartyA': 95, 'PartyB': 85, 'PartyC': 110, 'PartyD': 105 }
-  }; // Replace with actual votes
-
-  // Prepare input data to send to Python script
-  const inputData = {
-      num_constituencies,
-      num_parties,
-      constituencies,
-      parties,
-      votes
-  };
-
-  // Construct command to execute Python script
-  const pythonScriptPath = 'PROJECT_VOTING_SYSTEM\\a.py'; // Replace with actual path
-  const command = `python ${pythonScriptPath} ${JSON.stringify(inputData)}`;
-
-  // Execute Python script
-  exec(command, (error, stdout, stderr) => {
-      if (error) {
-          console.error(`exec error: ${error}`);
-          return;
-      }
-      console.log(`Python script output: ${stdout}`);
-
-      // Parse Python script output (assuming it returns the winning party or coalition)
-      const result = stdout.trim(); // Example: "PartyA forms the government with 2 seats"
-
-      // Handle the result accordingly in your Node.js application
-      console.log(`Result from Python script: ${result}`);
-  });
-};
-
-const checkFaceDetection2 = async (req, res, next) => {
-  if (!req.session.faceDetected) {
-    const result = await db.query("SELECT accesscount FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
-    let accessCount = result.rows[0].accesscount;
-    // console.log(accessCount);
-    await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount-1]);
-    return res.redirect('/face-detection');
-  }
-  next();
-}
-
 app.get('/face-scan', (req, res) => {
   // Assume face-scan.html is in the same directory as this file.
-  res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' , 'trial.html'));
+  res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' , 'Face-Detection-Code.html'));
 });
 
 // Route: Receive image from face scan page and run Python face detection
@@ -356,7 +228,7 @@ app.post("/detect-face", (req, res) => {
       exec(
         `python -u "${pythonScriptPath}" "${filePath}"`,
         { timeout: 10000 },
-        (error, stdout, stderr) => {
+        async (error, stdout, stderr) => {
           if (error) {
             console.error("Python script error:", error);
             req.session.faceDetected = false;
@@ -367,11 +239,27 @@ app.post("/detect-face", (req, res) => {
           console.log("Python script output:", stdout);
 
           if (stdout.includes("Face detected")) {
+            // On success, reset the no-face counter and record the detection time.
             req.session.faceDetected = true;
+            req.session.noFaceCount = 0;
+            req.session.faceDetectionTime = Date.now();
             return res.json({ message: "Face detected" });
           } else {
-            req.session.faceDetected = false;
-            return res.status(200).json({ message: "No face detected" });
+            // Increment no-face counter.
+            req.session.noFaceCount = (req.session.noFaceCount || 0) + 1;
+            // If three consecutive no-face detections, clear login status and destroy session.
+            if (req.session.noFaceCount >= 3) {
+              await clearUserLoginStatus(req.session.user ? req.session.user.voter_id : "unknown");
+              req.session.destroy((e) => {
+                if (e) {
+                  console.error("Error destroying session:", e);
+                }
+              });
+              return res.status(200).json({ message: "Too many failed detections. Redirecting to home." });
+            } else {
+              req.session.faceDetected = false;
+              return res.status(200).json({ message: "No face detected" });
+            }
           }
         }
       );
@@ -379,7 +267,7 @@ app.post("/detect-face", (req, res) => {
   });
 });
 
-const checkFaceDetection3 = (req, res, next) => {
+const checkFaceDetection = (req, res, next) => {
   // If the session flag is set, then proceed.
   if (req.session.faceDetected) {
     next();
@@ -388,52 +276,6 @@ const checkFaceDetection3 = (req, res, next) => {
     res.redirect('/face-scan');
   }
 };
-
-app.get('/face-detection', (req, res) => {
-  // res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
-  res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' ,'index2.html'));
-});
-
-app.get('/face-detection-success', (req, res) => {
-  req.session.faceDetected = true;
-  res.redirect('/vote');
-});
-
-app.get('/face-detection-failed', async (req, res) => {
-  req.session.faceDetected = false;
-  await clearUserLoginStatus(req.session.user.voter_id);
-  req.session.destroy((e) => {
-      if (e) {
-          console.error("Error destroying session:", e);
-      }
-  });
-  res.redirect('/');
-});
-
-async function checkFaceDetectionDuringVote2(req, res, next) {
-  if (!req.session || req.session.faceDetected === undefined) {
-    return res.status(401).json({ message: 'Face detection status not found in session.' });
-  }
-  req.faceDetected = req.session.faceDetected;
-  next();
-}
-
-// Route to serve the face monitor page
-app.get('/face-monitor', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'Face-Detection-JavaScript' ,'index.html'));
-});
-
-// Route to handle face detection status updates
-app.post('/face-detection-status', (req, res) => {
-  req.session.faceDetectionStatus = { detected: req.body.faceDetected };
-  if(req.body.faceDetected == true){
-    res.redirect('/vote');
-  }
-  else{
-    res.redirect('/vote');
-  }
-});
-
 
 app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   const fullName = req.body.fullName;
@@ -664,7 +506,7 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetection3, (req, res) => {
+app.get("/vote", checkAccessCount, checkFaceDetection, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });

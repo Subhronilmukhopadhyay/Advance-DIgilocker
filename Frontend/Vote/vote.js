@@ -9,16 +9,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return; 
     }
 
-    // const faceMonitorWindow = window.open('/face-monitor', 'Face Monitor', 'width=320,height=240');
-
-    // startVideoProcessing();
-
-    // if (sessionStorage.getItem('logoutInProgress') === 'true') {
-    //     sessionStorage.removeItem('logoutInProgress');
-    //     window.location.href = "/";
-    //     return;
-    // }
-
     setTimeout(() => {
         alert("You have been on this page for 5 minutes. Redirecting to homepage.");
         logout();
@@ -140,54 +130,3 @@ window.addEventListener('beforeunload', function(e) {
     // }
     navigator.sendBeacon('/logout', JSON.stringify({ user: JSON.parse(sessionStorage.getItem('userDetails')) }));
 });
-
-function startVideoProcessing() {
-    return new Promise((resolve, reject) => {
-        const video = document.createElement('video');
-        video.width = 320;
-        video.height = 240;
-        video.autoplay = true;
-        video.muted = true;
-        document.body.append(video);
-
-        Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri('/Face-Detection-JavaScript/models'),
-            faceapi.nets.faceLandmark68Net.loadFromUri('/Face-Detection-JavaScript/models'),
-            faceapi.nets.faceRecognitionNet.loadFromUri('/Face-Detection-JavaScript/models'),
-            faceapi.nets.faceExpressionNet.loadFromUri('/Face-Detection-JavaScript/models')
-        ]).then(() => {
-            navigator.getUserMedia(
-                { video: {} },
-                stream => video.srcObject = stream,
-                err => reject(err)
-            );
-        });
-
-        video.addEventListener('play', () => {
-            const canvas = faceapi.createCanvasFromMedia(video);
-            document.body.append(canvas);
-            const displaySize = { width: video.width, height: video.height };
-            faceapi.matchDimensions(canvas, displaySize);
-
-            let faceDetected = false;
-            const intervalId = setInterval(async () => {
-                const detected = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions());
-                if (detected) {
-                    faceDetected = true;
-                    clearInterval(intervalId);
-                    video.remove();
-                    canvas.remove();
-                    resolve(true);
-                }
-            }, 1000); // Check every second
-
-            // Timeout after 10 seconds
-            setTimeout(() => {
-                clearInterval(intervalId);
-                video.remove();
-                canvas.remove();
-                resolve(faceDetected);
-            }, 10000); // 10 seconds
-        });
-    });
-}
