@@ -199,8 +199,8 @@ const checkAccessCount = async (req, res, next) => {
 
 const checkFaceDetectionDuringVote = async (req, res, next) => {
   try {
-      // const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py';
-      const scriptPath = path.join(__dirname, 'PROJECT_VOTING_SYSTEM', 'a.py');
+      // const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py'; //for local use
+      const scriptPath = path.join(__dirname, 'PROJECT_VOTING_SYSTEM', 'a.py'); //deploy (in future possible)
       exec(`python -u ${scriptPath}`, { timeout: 10000 }, async (error, stdout, stderr) => {
           console.log('Python stdout:', stdout);
           if (error) {
@@ -592,7 +592,7 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetectionDuringVote, (req, res) => {
+app.get("/vote", checkAccessCount, checkFaceDetection2, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
