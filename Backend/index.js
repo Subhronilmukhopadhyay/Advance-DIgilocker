@@ -590,7 +590,7 @@ app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
   }
 });
 
-app.get("/vote", checkAccessCount, checkFaceDetection2, (req, res) => {
+app.get("/vote", checkAccessCount, checkFaceDetectionDuringVote, (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Vote', 'vote.html'));
 });
