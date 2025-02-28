@@ -34,6 +34,10 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 xml_file_path = os.path.join(current_directory, 'Required_Models_(2_7)', 'haarcascade_frontalface_default.xml')
+
+print("Debug: Looking for XML file at:", xml_file_path)
+sys.stdout.flush()
+
 fd = FaceDetector(xml_file_path)
 
 for i in range(5):
