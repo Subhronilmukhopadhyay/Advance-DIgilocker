@@ -199,7 +199,8 @@ const checkAccessCount = async (req, res, next) => {
 
 const checkFaceDetectionDuringVote = async (req, res, next) => {
   try {
-      const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py';
+      // const scriptPath = 'PROJECT_VOTING_SYSTEM\\a.py';
+      const scriptPath = path.join(__dirname, 'PROJECT_VOTING_SYSTEM', 'a.py');
       exec(`python ${scriptPath}`, { timeout: 10000 }, async (error, stdout, stderr) => {
           if (error) {
               if (error.code === 1 || stdout.includes("No face detected")) {
