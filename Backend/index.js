@@ -479,15 +479,27 @@ app.post('/virtual_election/voter_login', async (req, res) => {
       return res.send({ message: "User Already logged in!" });
     }
     const result = await db.query('SELECT * FROM voters_details WHERE voter_id = $1', [epicno]);
+    // console.log(result);
     if (result.rows.length > 0) {
-      await updateUserLoginStatus(epicno, 'Voter');
-      req.session.user = {
-        ...result.rows[0],
-        phone: phone,
-        loginType: 'voter',
-      };
+      // const result2 = await db.query('SELECT aadhaar FROM voters_details WHERE voter_id = $1', [epicno]);
+      const result_check = await db.query('SELECT mobile FROM voters WHERE aadhaar = $1', [result.rows[0].aadhaar]);
+      console.log(result_check);
+      if(result_check.rows.length == 0) {
+        return res.json({ success: false, message: 'No phone number detected or matched' });
+      }
+      else if(result_check.rows[0].mobile != phone) {
+        return res.json({ success: false, message: 'phone number doesn\'t match' });
+      }
+      else {
+        await updateUserLoginStatus(epicno, 'Voter');
+        req.session.user = {
+          ...result.rows[0],
+          phone: phone,
+          loginType: 'voter',
+        }; 
+        res.json({ success: true });
+      }
       // console.log(req.session.user);
-      res.json({ success: true });
     } else {
       res.json({ success: false, message: 'Invalid Voter ID or phone number' });
     }
