@@ -32,7 +32,7 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     resized = cv2.resize(image, dim, interpolation=inter)
     return resized
 
-current_directory = os.path.dirname(__file__)
+current_directory = os.path.dirname(os.path.abspath(__file__))
 xml_file_path = os.path.join(current_directory, 'Required_Models_(2_7)', 'haarcascade_frontalface_default.xml')
 fd = FaceDetector(xml_file_path)
 
