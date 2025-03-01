@@ -152,7 +152,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #ace8fe;
       margin: 0;
       min-height: 100vh;
       display: flex;
@@ -194,6 +194,11 @@
       text-align: center;
       min-height: 24px;
     }
+    .countdown {
+      font-size: 24px;
+      color: #2c3e50;
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -202,7 +207,7 @@
     <video id="videoFeed" autoplay playsinline></video>
     <button id="captureButton">Capture Face</button>
   </div>
-  <div id="message"></div>
+  <div id="message" class="countdown"></div>
   <canvas id="snapshotCanvas" style="display: none;"></canvas>
 
   <script>
@@ -211,6 +216,22 @@
     const captureButton = document.getElementById('captureButton');
     const messageDiv = document.getElementById('message');
     let globalTimeoutId;
+
+    // Initial countdown before camera starts
+    function startInitialCountdown() {
+      let count = 10;
+      messageDiv.textContent = `Loading facial recognition scan in ${count}...`;
+      
+      const countdownInterval = setInterval(() => {
+        count--;
+        messageDiv.textContent = `Loading facial recognition scan in ${count}...`;
+        
+        if (count <= 0) {
+          clearInterval(countdownInterval);
+          initCamera();
+        }
+      }, 1000);
+    }
 
     // Global timer (1 minute)
     function startGlobalTimer() {
@@ -229,17 +250,30 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
+        
+        // Wait for video to be ready
+        await new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            video.play().then(resolve).catch(error => {
+              console.error("Error playing video:", error);
+              logoutUser("Camera error");
+            });
+          };
+        });
+
+        // Show UI elements
         video.style.display = 'block';
         captureButton.style.display = 'block';
-        messageDiv.textContent = "Click the button to capture your face";
-        video.play();
+        messageDiv.textContent = "Camera ready - Click to capture your face";
+        startGlobalTimer();
+
       } catch (err) {
         console.error("Camera error:", err);
         logoutUser("Camera access denied");
       }
     }
 
-    // Face capture and redirect
+    // Face capture and redirect with countdown
     function captureAndRedirect() {
       // Capture image
       const context = canvas.getContext('2d');
@@ -247,7 +281,7 @@
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0);
       
-      // Send image to server (fire and forget)
+      // Send image to server
       const imageData = canvas.toDataURL('image/jpeg', 0.7);
       fetch('/store-face', {
         method: 'POST',
@@ -255,24 +289,31 @@
         body: JSON.stringify({ image: imageData })
       }).catch(err => console.error('Error sending image:', err));
 
-      // Immediate redirect
-      messageDiv.textContent = "Face captured. Redirecting...";
-       setTimeout(() => {
-        // In the captureAndRedirect function:
-        window.location.href = "../Vote/vote.html"; 
-      }, 1500);
+      // Start redirect countdown
+      let redirectCount = 10;
+      const redirectInterval = setInterval(() => {
+        messageDiv.textContent = `Redirecting in ${redirectCount}...`;
+        redirectCount--;
+        
+        if (redirectCount <= 0) {
+          clearInterval(redirectInterval);
+          window.location.href = "../Vote/vote.html";
+        }
+      }, 1000);
     }
 
     // Event listeners
     captureButton.addEventListener('click', () => {
       captureButton.disabled = true;
+      messageDiv.textContent = "Processing capture...";
       captureAndRedirect();
     });
 
     // Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      startGlobalTimer();
-      initCamera();
+      video.style.display = 'none';
+      captureButton.style.display = 'none';
+      startInitialCountdown();
     });
   </script>
 </body>
