@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -17,7 +17,6 @@
     #videoFeed {
       width: 640px;
       max-width: 100%;
-      border: 2px solid #ddd;
       border-radius: 8px;
       margin-bottom: 20px;
     }
@@ -48,7 +47,7 @@
   <br />
   <button id="captureButton">Capture Face</button>
   <div id="message"></div>
-  <!-- Hidden canvas to capture video frame -->
+ Hidden canvas to capture video frame 
   <canvas id="snapshotCanvas" style="display: none;"></canvas>
 
   <script>
@@ -139,6 +138,192 @@
     });
 
     window.addEventListener("DOMContentLoaded", initCamera);
+  </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Face Scan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .camera-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #videoFeed {
+      width: 640px;
+      max-width: 90%;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    #captureButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+      margin-bottom: 20px;
+    }
+    #captureButton:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    #message {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Face Detection Scan</h1>
+  <div class="camera-container">
+    <video id="videoFeed" autoplay playsinline></video>
+    <button id="captureButton">Capture Face</button>
+  </div>
+  <div id="message"></div>
+  <canvas id="snapshotCanvas" style="display: none;"></canvas>
+
+  <script>
+    const video = document.getElementById('videoFeed');
+    const canvas = document.getElementById('snapshotCanvas');
+    const captureButton = document.getElementById('captureButton');
+    const messageDiv = document.getElementById('message');
+    let globalTimeoutId;
+    let cameraReady = false;
+    let countdownFinished = false;
+
+    // Global timer (1 minute)
+    function startGlobalTimer() {
+      globalTimeoutId = setTimeout(() => {
+        logoutUser("Session expired due to inactivity");
+      }, 60000);
+    }
+
+    function logoutUser(reason = "Session expired") {
+      alert(`${reason}. Logging you out.`);
+      fetch('/logout', { method: 'POST' })
+        .then(() => window.location.href = "/")
+        .catch(() => window.location.href = "/");
+    }
+
+    // Camera initialization
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play();
+          cameraReady = true;
+          if (countdownFinished) {
+            showCameraInterface();
+          }
+        };
+      } catch (err) {
+        console.error("Camera error:", err);
+        logoutUser("Camera access denied");
+      }
+    }
+
+    function showCameraInterface() {
+      video.style.display = 'block';
+      captureButton.style.display = 'block';
+      messageDiv.textContent = "Position your face in the frame and click Capture Face";
+    }
+
+    // Countdown timer
+    function startCountdown() {
+      let count = 10;
+      const countdownInterval = setInterval(() => {
+        messageDiv.textContent = `Starting facial recognition scan in ${count}...`;
+        
+        if (count <= 0) {
+          clearInterval(countdownInterval);
+          countdownFinished = true;
+          if (cameraReady) {
+            showCameraInterface();
+            messageDiv.textContent = ""; // Clear countdown message
+          } else {
+            logoutUser("Camera initialization failed");
+          }
+        }
+        count--;
+      }, 1000);
+    }
+
+    // Face capture and processing
+    function captureImage() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      return canvas.toDataURL('image/jpeg', 0.7);
+    }
+
+    async function processFaceCapture() {
+      try {
+        const imageData = captureImage();
+        const response = await fetch('/detect-face', {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: imageData })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {  // Changed to check for success flag
+          clearTimeout(globalTimeoutId);
+          messageDiv.textContent = "Verification successful! Redirecting...";
+          setTimeout(() => window.location.href = "/vote", 1500);
+        } else {
+          messageDiv.textContent = "Face not recognized. Please try again.";
+          captureButton.disabled = false;
+        }
+      } catch (err) {
+        console.error("Processing error:", err);
+        messageDiv.textContent = "Verification failed. Please try again.";
+        captureButton.disabled = false;
+      }
+    }
+
+    // Event listeners
+    captureButton.addEventListener('click', () => {
+      captureButton.disabled = true;
+      messageDiv.textContent = "Verifying face...";
+      processFaceCapture();
+    });
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      startGlobalTimer();
+      startCountdown();
+      initCamera();
+    });
   </script>
 </body>
 </html>
