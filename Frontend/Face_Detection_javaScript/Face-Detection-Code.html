@@ -187,10 +187,6 @@
       display: none;
       margin-bottom: 20px;
     }
-    #captureButton:disabled {
-      background-color: #aaa;
-      cursor: not-allowed;
-    }
     #message {
       font-size: 18px;
       font-weight: bold;
@@ -201,7 +197,7 @@
   </style>
 </head>
 <body>
-  <h1>Face Detection Scan</h1>
+  <h1>Face Capture</h1>
   <div class="camera-container">
     <video id="videoFeed" autoplay playsinline></video>
     <button id="captureButton">Capture Face</button>
@@ -215,8 +211,6 @@
     const captureButton = document.getElementById('captureButton');
     const messageDiv = document.getElementById('message');
     let globalTimeoutId;
-    let cameraReady = false;
-    let countdownFinished = false;
 
     // Global timer (1 minute)
     function startGlobalTimer() {
@@ -227,9 +221,7 @@
 
     function logoutUser(reason = "Session expired") {
       alert(`${reason}. Logging you out.`);
-      fetch('/logout', { method: 'POST' })
-        .then(() => window.location.href = "/")
-        .catch(() => window.location.href = "/");
+      window.location.href = "/";
     }
 
     // Camera initialization
@@ -237,91 +229,48 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-          cameraReady = true;
-          if (countdownFinished) {
-            showCameraInterface();
-          }
-        };
+        video.style.display = 'block';
+        captureButton.style.display = 'block';
+        messageDiv.textContent = "Click the button to capture your face";
+        video.play();
       } catch (err) {
         console.error("Camera error:", err);
         logoutUser("Camera access denied");
       }
     }
 
-    function showCameraInterface() {
-      video.style.display = 'block';
-      captureButton.style.display = 'block';
-      messageDiv.textContent = "Position your face in the frame and click Capture Face";
-    }
-
-    // Countdown timer
-    function startCountdown() {
-      let count = 10;
-      const countdownInterval = setInterval(() => {
-        messageDiv.textContent = `Starting facial recognition scan in ${count}...`;
-        
-        if (count <= 0) {
-          clearInterval(countdownInterval);
-          countdownFinished = true;
-          if (cameraReady) {
-            showCameraInterface();
-            messageDiv.textContent = ""; // Clear countdown message
-          } else {
-            logoutUser("Camera initialization failed");
-          }
-        }
-        count--;
-      }, 1000);
-    }
-
-    // Face capture and processing
-    function captureImage() {
+    // Face capture and redirect
+    function captureAndRedirect() {
+      // Capture image
       const context = canvas.getContext('2d');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0);
-      return canvas.toDataURL('image/jpeg', 0.7);
-    }
+      
+      // Send image to server (fire and forget)
+      const imageData = canvas.toDataURL('image/jpeg', 0.7);
+      fetch('/store-face', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+      }).catch(err => console.error('Error sending image:', err));
 
-    async function processFaceCapture() {
-      try {
-        const imageData = captureImage();
-        const response = await fetch('/detect-face', {
-          method: 'POST',
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: imageData })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {  // Changed to check for success flag
-          clearTimeout(globalTimeoutId);
-          messageDiv.textContent = "Verification successful! Redirecting...";
-          setTimeout(() => window.location.href = "/vote", 1500);
-        } else {
-          messageDiv.textContent = "Face not recognized. Please try again.";
-          captureButton.disabled = false;
-        }
-      } catch (err) {
-        console.error("Processing error:", err);
-        messageDiv.textContent = "Verification failed. Please try again.";
-        captureButton.disabled = false;
-      }
+      // Immediate redirect
+      messageDiv.textContent = "Face captured. Redirecting...";
+      setTimeout(() => {
+        window.location.href = "/vote";
+      }, 1500);
     }
 
     // Event listeners
     captureButton.addEventListener('click', () => {
       captureButton.disabled = true;
-      messageDiv.textContent = "Verifying face...";
-      processFaceCapture();
+      captureAndRedirect();
     });
 
     // Initialization
     window.addEventListener('DOMContentLoaded', () => {
       startGlobalTimer();
-      startCountdown();
       initCamera();
     });
   </script>
