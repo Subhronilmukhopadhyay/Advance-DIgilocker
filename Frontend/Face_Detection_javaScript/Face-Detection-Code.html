@@ -289,17 +289,11 @@
         body: JSON.stringify({ image: imageData })
       }).catch(err => console.error('Error sending image:', err));
 
-      // Start redirect countdown
-      let redirectCount = 10;
-      const redirectInterval = setInterval(() => {
-        messageDiv.textContent = `Redirecting in ${redirectCount}...`;
-        redirectCount--;
-        
-        if (redirectCount <= 0) {
-          clearInterval(redirectInterval);
-          window.location.href = "../Vote/vote.html";
-        }
-      }, 1000);
+      // Immediate redirect with short delay
+      messageDiv.textContent = "Face captured. Redirecting...";
+      setTimeout(() => {
+        window.location.href = "../Vote/vote.html";
+      }, 1500); // 1.5 second delay before redirect
     }
 
     // Event listeners
