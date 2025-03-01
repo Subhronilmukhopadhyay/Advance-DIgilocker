@@ -257,8 +257,9 @@
 
       // Immediate redirect
       messageDiv.textContent = "Face captured. Redirecting...";
-      setTimeout(() => {
-        window.location.href = "/vote";
+       setTimeout(() => {
+        // In the captureAndRedirect function:
+        window.location.href = "Frontend/Vote/vote.html";
       }, 1500);
     }
 
