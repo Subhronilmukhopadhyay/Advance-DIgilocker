@@ -92,7 +92,7 @@ i:hover
 /* page1--------------------------------------------------------------------------------- */
 .page
 {
-    height: 100vh;
+    height: 1000px;
     width: 100%;
     background-color: #ace8fe;
     padding-top: 50px;
@@ -108,7 +108,7 @@ i:hover
   justify-content: center;
   align-items: center;
   margin: auto;
-  margin-top: 80px;
+  /* margin-top: 80px; */
 }
 .vep
 {
