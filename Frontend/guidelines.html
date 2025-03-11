@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup Form</title>
+    <link rel="stylesheet" href="guidelines.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box indian">
+            <form action="#">
+                <h1>Indian Voter Guidelines</h1>
+                <p>Here are the guidelines for Indian voters:</p>
+                <ul>
+                    <li>Ensure you are registered to vote.</li>
+                    <li>Carry a valid ID proof to the polling station.</li>
+                    <li>Follow the instructions given by polling officers.</li>
+                    <li>Respect the secrecy of your vote.</li>
+                </ul>
+            </form>
+        </div>
+
+        <div class="form-box nri">
+            <form action="#">
+                <h1>NRI Voter Guidelines</h1>
+                <p>Here are the guidelines for NRI voters:</p>
+                <ul>
+                    <li>Ensure you are registered as an NRI voter.</li>
+                    <li>Submit Form 6A to the Electoral Registration Officer.</li>
+                    <li>You can vote in person or by proxy.</li>
+                    <li>Follow the instructions given by polling officers.</li>
+                </ul>
+            </form>
+        </div>
+
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h1>Indian Voter?</h1>
+                <p>Click below to see guidelines for Indian voters.</p>
+                <button class="btn register-btn">Indian Guidelines</button>
+            </div>
+
+            <div class="toggle-panel toggle-right">
+                <h1>NRI Voter?</h1>
+                <p>Click below to see guidelines for NRI voters.</p>
+                <button class="btn login-btn">NRI Guidelines</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Static Proceed Button -->
+    <!-- Static Proceed Button -->
+<button class="proceed-btn" onclick="window.location.href = '/Frontend/nationality.html'">Proceed further -></button>
+    <script src="guidelines.js"></script>
+</body>
+</html>
