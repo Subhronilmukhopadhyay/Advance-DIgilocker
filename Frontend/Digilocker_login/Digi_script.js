@@ -81,7 +81,7 @@ function handleSubmit(event) {
         // console.log('Form Data:', formData);
         submitButton.innerText = 'Logging in...';
         submitButton.disabled = true;
-        fetch('/Digilocker_login/digilogin.html', {
+        fetch('/Digilocker-login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

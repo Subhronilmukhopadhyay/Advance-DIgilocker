@@ -70,8 +70,19 @@ app.use(bodyParser.json());
 
 const frontendPath = path.join(__dirname, '..', 'Frontend');
 app.use(express.static(frontendPath));
+
 app.get("/", (req, res) => {
-    res.sendFile(path.join(frontendPath, 'nationality.html'));
+    res.sendFile(path.join(frontendPath, 'landing.html'));
+});
+
+app.get("/guidelines", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'guidelines.html'));
+});
+
+app.get("/nationality", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'nationality.html'));
 });
 
 app.use(session({

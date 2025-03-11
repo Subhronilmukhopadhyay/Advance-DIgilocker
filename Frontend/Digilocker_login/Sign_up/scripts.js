@@ -11,7 +11,7 @@ function handleSubmit(event) {
         jsonData[key] = value;
     });
 
-    fetch('/Digilocker_login/Sign_up/index.html', {
+    fetch('/Digilocker-login/Sign-up', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

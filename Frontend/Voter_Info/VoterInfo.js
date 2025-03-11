@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
           endpoint = '/virtual_election/Voter_Info/VoterInfo.html';
       }
 
-      fetch('/Voter_Info/VoterInfo.html', {
+      fetch('/Voter_Info', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',

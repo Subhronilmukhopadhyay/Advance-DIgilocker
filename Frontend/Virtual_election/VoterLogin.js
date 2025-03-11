@@ -3,7 +3,7 @@ async function handleSubmit(event) {
     const epicno = document.getElementById('epicno').value;
     const phone = document.getElementById('phone').value;
 
-    const response = await fetch('/virtual_election/voter_login', {
+    const response = await fetch('/voter-login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
