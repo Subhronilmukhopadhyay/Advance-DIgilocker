@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,3 +57,63 @@
     <script src="guidelines.js"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup Form</title>
+    <link rel="stylesheet" href="guidelines.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box indian">
+            <form action="#">
+                <h1>Guidelines for Indian Voters</h1>
+                  <ul>
+                    <li>Landing Page: Select "Indian" to proceed as an Indian voter.</li>
+                    <li>Home Page: Choose to log in via DigiLocker (using mobile number, username, or Aadhaar with a 6-digit PIN) or Voter ID (using EPIC number and OTP sent to your registered mobile number).</li>
+                    <li>Voter Details: After logging in, verify your displayed details (name, Voter ID, DOB, constituency, etc.).</li>
+                    <li>Face Detection: Capture a real-time image for liveness verification to ensure authenticity.</li>
+                    <li>Voting: View the list of candidates in your constituency (with names, party symbols, and photos). Select your preferred candidate and confirm your choice.</li>
+                    <li>Secure Submission: Your vote will be securely stored for election results.</li>
+                  </ul>
+                  <p>Note: Log in only during your assigned time slot. For assistance, refer to the Election Commission’s header/footer links or contact support.</p>
+            </form>
+        </div>
+
+        <div class="form-box nri">
+            <form action="#">
+                <h1>NRI Voter Guidelines</h1>
+                <p>Here are the guidelines for NRI voters:</p>
+                <ul>
+                    <li>Ensure you are registered as an NRI voter.</li>
+                    <li>Submit Form 6A to the Electoral Registration Officer.</li>
+                    <li>You can vote in person or by proxy.</li>
+                    <li>Follow the instructions given by polling officers.</li>
+                </ul>
+            </form>
+        </div>
+
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h1>Indian Voter?</h1>
+                <p>Click below to see guidelines for Indian voters.</p>
+                <button class="btn register-btn">Indian Guidelines</button>
+            </div>
+
+            <div class="toggle-panel toggle-right">
+                <h1>NRI Voter?</h1>
+                <p>Click below to see guidelines for NRI voters.</p>
+                <button class="btn login-btn">NRI Guidelines</button>
+            </div>
+        </div>
+    </div>
+
+<button class="proceed-btn" onclick="window.location.href = '/Frontend/nationality.html'">Proceed further -></button>
+    <script src="guidelines.js"></script>
+</body>
+</html>
+>>>>>>> 0b4e99353d5b52fa709fdd246ff22ce2ef2b18ba

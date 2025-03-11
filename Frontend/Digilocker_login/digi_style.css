@@ -101,9 +101,9 @@ i:hover
     height: 100vh;
 }
 
-.container {
+.container1 {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     background-color: rgb(255, 255, 255);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -111,6 +111,8 @@ i:hover
     margin-top: -120px;
     border-bottom:#004274;
     border-bottom-width: thick;
+    position: absolute;
+    margin-top: 50px;
 }
 
 header {
@@ -179,6 +181,7 @@ main {
 
 .signin-form {
     display: none;
+    position: relative;
 }
 
 .signin-form input[type="text"],
@@ -322,3 +325,37 @@ main {
     font-size: 12px;
     background-color: rgba(0, 0, 38,0.2);
 }
+
+
+.digi-span {
+    position: relative;
+    width: 400px;
+    height: 256px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+  }
+  
+  .digi-span span {
+    position: absolute;
+    left: 0;
+    width: 32px;
+    height: 6px;
+    background: #2c4766;
+    border-radius: 8px;
+    transform-origin: 190px;
+    transform: scale(2.2) rotate(calc(var(--i) * (360deg / 50)));
+    animation: blink 3s linear infinite;
+    animation-delay: calc(var(--i) * (3s / 50));
+  }
+  
+  @keyframes blink {
+    0% {
+      background: #0ef;
+    }
+  
+    25% {
+      background: #2c4766;
+    }
+  }
