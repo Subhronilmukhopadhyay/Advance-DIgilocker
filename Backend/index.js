@@ -277,7 +277,68 @@ const checkFaceDetection = (req, res, next) => {
   }
 };
 
-app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
+// const checkFaceDetection2 = async (req, res, next) => {
+//   if (!req.session.faceDetected) {
+//     const result = await db.query("SELECT accesscount FROM login_status WHERE user_id = $1", [req.session.user.voter_id]);
+//     let accessCount = result.rows[0].accesscount;
+//     // console.log(accessCount);
+//     await db.query("UPDATE login_status SET accesscount = $2 WHERE user_id = $1", [req.session.user.voter_id, accessCount-1]);
+//     return res.redirect('/face-detection');
+//   }
+//   next();
+// }
+
+// app.get('/face-detection', (req, res) => {
+//   // res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
+//   res.sendFile(path.join(frontendPath, 'Face_Detection_javaScript' ,'index2.html'));
+// });
+
+// app.get('/face-detection-success', (req, res) => {
+//   req.session.faceDetected = true;
+//   res.redirect('/vote');
+// });
+
+// app.get('/face-detection-failed', async (req, res) => {
+//   req.session.faceDetected = false;
+//   await clearUserLoginStatus(req.session.user.voter_id);
+//   req.session.destroy((e) => {
+//       if (e) {
+//           console.error("Error destroying session:", e);
+//       }
+//   });
+//   res.redirect('/');
+// });
+
+// async function checkFaceDetectionDuringVote2(req, res, next) {
+//   if (!req.session || req.session.faceDetected === undefined) {
+//     return res.status(401).json({ message: 'Face detection status not found in session.' });
+//   }
+//   req.faceDetected = req.session.faceDetected;
+//   next();
+// }
+
+// // Route to serve the face monitor page
+// app.get('/face-monitor', (req, res) => {
+//   res.sendFile(path.join(frontendPath, 'Face-Detection-JavaScript' ,'index.html'));
+// });
+
+// // Route to handle face detection status updates
+// app.post('/face-detection-status', (req, res) => {
+//   req.session.faceDetectionStatus = { detected: req.body.faceDetected };
+//   if(req.body.faceDetected == true){
+//     res.redirect('/vote');
+//   }
+//   else{
+//     res.redirect('/vote');
+//   }
+// });
+
+app.get("/Digilocker-login/Sign-up", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'Digilocker_login', "Sign_up", 'index.html'));
+});
+
+app.post("/Digilocker-login/Sign-up", async (req, res) => {
   const fullName = req.body.fullName;
   const gender = req.body.gender;
   const mobile = req.body.mobile;
@@ -328,7 +389,12 @@ app.post("/Digilocker_login/Sign_up/index.html", async (req, res) => {
   }
 });
 
-app.post("/Digilocker_login/digilogin.html", async (req, res) => {
+app.get("/Digilocker-login", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'Digilocker_login', 'digilogin.html'));
+});
+
+app.post("/Digilocker-login", async (req, res) => {
   try {
       // console.log('Received form data:', req.body);
       let user = null;
@@ -369,7 +435,7 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
                       req.session.user = {...result2.rows[0]}; 
                       res.json({ 
                           message: "Successfully Logged In",
-                          redirectUrl: '/Voter_Info/VoterInfo.html',
+                          redirectUrl: '/Voter_Info',
                           // redirectUrl: '../Voter_Info/voterInfo.html',
                           user: {...result2.rows[0], loginType: 'Digilocker',}
                       });
@@ -387,7 +453,12 @@ app.post("/Digilocker_login/digilogin.html", async (req, res) => {
   }
 });
 
-app.post('/virtual_election/voter_login', async (req, res) => {
+app.get("/voter-login", (req, res) => {
+  // console.log(req.session);
+  res.sendFile(path.join(frontendPath, 'virtual_election', 'VoterLogin.html'));
+});
+
+app.post('/voter-login', async (req, res) => {
   const { epicno, phone } = req.body;
   try {
     const isLoggedIn = await checkUserLoginStatus(epicno);
@@ -441,7 +512,7 @@ app.post('/virtual_election/verify_otp', (req, res) => {
       // console.log(req.session.user);
       // await updateUserLoginStatus(req.session.user.voter_id, 'Voter');
       if (req.session.user && req.session.user.phone === user_phone_number) {
-        res.json({ success: true, user: {...req.session.user}, redirectUrl: '../Voter_Info/voterinfo.html' });
+        res.json({ success: true, user: {...req.session.user}, redirectUrl: '/Voter_Info' });
       } else {
         try {
           const logoutResponse = await axios.post('http://localhost:3000/logout');
@@ -461,12 +532,12 @@ app.post('/virtual_election/verify_otp', (req, res) => {
   });
 });
 
-app.get("/Voter_Info/voterInfo.html", (req, res) => {
+app.get("/Voter_Info", (req, res) => {
   // console.log(req.session);
   res.sendFile(path.join(frontendPath, 'Voter_Info', 'VoterInfo.html'));
 });
 
-app.post("/Voter_Info/VoterInfo.html", async (req, res) => {
+app.post("/Voter_Info", async (req, res) => {
   try {
     // const hasVoted = req.session.user.voted;
     // const result = await db.query("SELECT * FROM voters_details WHERE voted = $1", [hasVoted]);
