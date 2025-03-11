@@ -90,12 +90,25 @@ i:hover
 }
 
 /* page1--------------------------------------------------------------------------------- */
-.page1
+.page
 {
-    height: 600px;
+    height: 100vh;
     width: 100%;
     background-color: #ace8fe;
     padding-top: 50px;
+    
+}
+.page1
+{
+    height: 600px;
+    width: 100vh;
+    background-color: #ace8fe;
+    padding-top: 50px;
+    display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  margin-top: 80px;
 }
 .vep
 {
@@ -114,36 +127,13 @@ i:hover
     margin: auto;
     border-radius: 10px; 
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: absolute;
 }
 .txt{
     font-family: 'Times New Roman', Times, serif;
-    font-size: 24px;
+    font-size: 34px;
     padding: 20px;
 }
-/* .line1
-{
-    height: 10px;
-    width: 100%;
-    display: flex;
-    justify-content:space-evenly;
-    align-items: center;
-    /* background-color: #004274;
-}
-.orange
-{
-    height: 10px;
-    background-color:orange;
-}
-.white
-{
-    height: 10px;
-    background-color: white;
-}
-.green
-{
-    height: 10px;
-    background-color: green;
-} */
 .inbox
 {
     height: 20px;
@@ -169,11 +159,6 @@ button:hover
     transform: scale(1.1);
     background-color: #004274;
 }
-
-
-
-
-
 
 /* footer---------------------------------------------------------------------------- */
 .footer {
@@ -254,3 +239,37 @@ button:hover
     font-size: 12px;
     background-color: rgba(0, 0, 38,0.2);
 }
+
+
+.login-span {
+    position: relative;
+    width: 400px;
+    height: 256px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+  }
+  
+  .login-span span {
+    position: absolute;
+    left: 0;
+    width: 32px;
+    height: 6px;
+    background: #2c4766;
+    border-radius: 8px;
+    transform-origin: 185px;
+    transform: scale(2.2) rotate(calc(var(--i) * (360deg / 50)));
+    animation: blink 3s linear infinite;
+    animation-delay: calc(var(--i) * (3s / 50));
+  }
+  
+  @keyframes blink {
+    0% {
+      background: #0ef;
+    }
+  
+    25% {
+      background: #2c4766;
+    }
+  }
