@@ -102,17 +102,15 @@ The system is structured with progressive verification, ensuring that each voter
 5. Configure environment variables:
    - Create a `.env` file in the root directory with the following variables:
      ```
-     DB_USER=your_postgresql_username
-     DB_PASSWORD=your_postgresql_password
-     DB_HOST=localhost
-     DB_PORT=5432
-     DB_NAME=your_database_name
      SESSION_SECRET=your_session_secret
-     TWILIO_ACCOUNT_SID=your_twilio_sid
-     TWILIO_AUTH_TOKEN=your_twilio_token
-     TWILIO_PHONE_NUMBER=your_twilio_phone
-     MAIL_USER=your_email_address
-     MAIL_PASS=your_email_password
+     PG_USER=postgres
+     PG_HOST=localhost
+     PG_DATABASE1=VotersLocker
+     PG_DATABASE2=party_votes
+     PG_PASSWORD=your_postgres_password
+     PG_PORT=5432
+     RECAPTCHA_SECRET_KEY=your_recaptcha_key
+     POSTGRES_URL=your_neon_postgres_url (if using Neon for deployment)
      ```
 
 6. Start the application:
