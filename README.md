@@ -84,6 +84,8 @@ The system is structured with progressive verification, ensuring that each voter
 2. Install Node.js dependencies:
    ```bash
    npm install
+   node --version
+   v20.11.0
    ```
 
 3. Install Python dependencies:
