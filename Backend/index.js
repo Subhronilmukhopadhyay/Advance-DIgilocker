@@ -466,7 +466,7 @@ app.post("/Digilocker-login", async (req, res) => {
 
 app.get("/voter-login", (req, res) => {
   // console.log(req.session);
-  res.sendFile(path.join(frontendPath, 'virtual_election', 'VoterLogin.html'));
+  res.sendFile(path.join(frontendPath, 'Virtual_election', 'VoterLogin.html'));
 });
 
 app.post('/voter-login', async (req, res) => {

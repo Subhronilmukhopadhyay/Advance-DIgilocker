@@ -15,6 +15,16 @@
             </div>
             <div class="menu">&nbsp;&nbsp;Menu</div>
         </div>
+        <div class="dropdown-menu" id="dropdown-menu">
+            <div class="dropdown-item"><a href="https://www.eci.gov.in/about-eci">About ECI</a></div>
+            <div class="dropdown-item"><a href="https://www.eci.gov.in/officers-directory">Officers Directory</a></div>
+            <div class="dropdown-item"><a href="https://www.eci.gov.in/contact-us">Contact Us</a></div>
+            <div class="dropdown-item"><a href="https://voters.eci.gov.in/home/ngsp">Public Grievance</a></div>
+            <div class="dropdown-item"><a href="https://voters.eci.gov.in/home/ngsp">RTI Online</a></div>
+            <div class="dropdown-item"><a href="https://voters.eci.gov.in/home/ngsp">eOffice</a></div>
+            <div class="dropdown-item"><a href="https://voters.eci.gov.in/">Apply for Voter Card</a></div>
+            <div class="dropdown-item"><a href="https://www.eci.gov.in/voter-education">SVEEP</a></div>
+          </div>
         <div class="links">
             <div class="home">  
                 <a href="HomePage.html"><i class="fa-solid fa-house" style="color: #ffffff;"></i></a>
@@ -120,5 +130,42 @@
         <p>© Copyright Election Commission of India 2024</p>
     </div>
 </footer>
+<script>
+    // Toggle dropdown menu when menu is clicked
+    document.querySelector('.menu-sec').addEventListener('click', function() {
+      document.getElementById('dropdown-menu').classList.toggle('active');
+    });
+  
+    // For mobile: Create mobile menu button and mobile menu functionality
+    const navbar = document.querySelector('.navbar');
+    const mobileMenuBtn = document.createElement('button');
+    mobileMenuBtn.classList.add('mobile-menu-btn');
+    mobileMenuBtn.innerHTML = '☰';
+    navbar.insertBefore(mobileMenuBtn, document.querySelector('.links'));
+  
+    mobileMenuBtn.addEventListener('click', function() {
+      document.querySelector('.links').classList.toggle('active');
+    });
+  
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const isClickInsideMenu = event.target.closest('.menu-sec');
+      const isClickInsideDropdown = event.target.closest('.dropdown-menu');
+      
+      if (!isClickInsideMenu && !isClickInsideDropdown) {
+        document.getElementById('dropdown-menu').classList.remove('active');
+      }
+    });
+  
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const isClickInsideButton = event.target.closest('.mobile-menu-btn');
+      const isClickInsideLinks = event.target.closest('.links');
+      
+      if (!isClickInsideButton && !isClickInsideLinks) {
+        document.querySelector('.links').classList.remove('active');
+      }
+    });
+  </script>
 </body>
 </html>
